@@ -1,6 +1,7 @@
 const Colors = {
     bg: 0x201819,
     pointCloud: 0x20dd80,
+    laserScan: 0xdd8020,
     walls: 0x2080dd
 };
 
@@ -16,6 +17,18 @@ async function onload() {
         const msg = parser.readMessage();
         viz.pointCloud.geometry.setFromPoints(
             msg.points.map(point => new THREE.Vector3(point.point.x, point.point.y)));
+        
+        console.log(msg);
+        const laserPoints = [];
+        const nLaserPoints = msg.laser.ranges.length;
+        const lasert0 = msg.laser.angle_min;
+        const lasert1 = msg.laser.angle_max;
+        for (let i = 0; i < nLaserPoints; ++i) {
+            const theta = lasert0 + i / nLaserPoints * (lasert1 - lasert0);
+            const r = msg.laser.ranges[i];
+            laserPoints.push(new THREE.Vector3(Math.cos(theta) * r, Math.sin(theta) * r, 0)); 
+        }
+        viz.laserScan.geometry.setFromPoints(laserPoints);
     });
     window.addEventListener("beforeunload", () => {
         socket.close();
@@ -53,6 +66,9 @@ class Visualizer {
 
         this.pointCloud = new PointCloud();
         this.scene.add(this.pointCloud.points);
+
+        this.laserScan = new PointCloud({color: Colors.laserScan});
+        this.scene.add(this.laserScan.points);
         
         const sphere = new THREE.Mesh(
             new THREE.SphereGeometry(0.25),
@@ -88,10 +104,10 @@ class Visualizer {
 }
 
 class PointCloud {
-    constructor() {
+    constructor({color=Colors.pointCloud}={}) {
         this.geometry = new THREE.BufferGeometry();
         const material = new THREE.PointsMaterial({
-            color: Colors.pointCloud,
+            color: color,
             size: 5
         });
         this.points = new THREE.Points(this.geometry, material);
