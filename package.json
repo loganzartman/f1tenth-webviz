@@ -1,0 +1,13 @@
+{
+  "name": "rviz2",
+  "version": "1.0.0",
+  "description": "Robot visualizer",
+  "author": "Logan Zartman",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@types/roslib": "^1.0.0",
+    "roslib": "^1.0.1",
+    "three": "^0.113.2"
+  }
+}
