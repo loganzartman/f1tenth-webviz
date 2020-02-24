@@ -5,12 +5,41 @@ const Colors = {
     walls: 0x2080dd
 };
 
-async function onload() {
-    const viz = new Visualizer();
-    await viz.worldMap.load("http://amrl.cs.utexas.edu/f1tenth_course/maps/GDC1.json");
+const params = {
+    connection: {
+        hostname: "localhost",
+        port: 10272
+    },
+    mapName: "GDC1"
+};
 
-    
-    const socket = new WebSocket("ws://localhost:10272/");
+let viz;
+let socket;
+
+async function onload() {    
+    // set up visualizer
+    viz = new Visualizer();
+    await viz.worldMap.loadAmrl(params.mapName);
+    window.addEventListener("resize", () => 
+        viz.updateRenderer(window.innerWidth, window.innerHeight));
+    document.body.appendChild(viz.renderer.domElement);
+    viz.run();
+
+    // create dat.GUI interface
+    buildGui();
+
+    // create websocket connection
+    reconnect();
+    window.addEventListener("beforeunload", () => socket.close());
+}
+window.addEventListener("load", async () => onload(), false);
+
+function reconnect() {
+    if (socket) {
+        socket.close();
+    }
+    socket = new WebSocket(`ws://${params.connection.hostname}:${params.connection.port}`);
+
     socket.addEventListener("message", async event => {
         const buffer = await event.data.arrayBuffer();
         const parser = new DataParser(buffer);
@@ -30,17 +59,19 @@ async function onload() {
         }
         viz.laserScan.geometry.setFromPoints(laserPoints);
     });
-    window.addEventListener("beforeunload", () => {
-        socket.close();
-    });
-    
-    window.addEventListener("resize", () => 
-    viz.updateRenderer(window.innerWidth, window.innerHeight), false);
-    document.body.appendChild(viz.renderer.domElement);
-    
-    viz.run();
 }
-window.addEventListener("load", async () => onload(), false);
+
+function buildGui() {
+    const gui = new dat.GUI({autoPlace: false});
+    document.getElementById("dat-container").appendChild(gui.domElement);
+
+    const guiConnection = gui.addFolder("Connection");
+    guiConnection.add(params.connection, "hostname").name("IP / hostname").onFinishChange(() => reconnect());
+    guiConnection.add(params.connection, "port").min(0).step(1).onFinishChange(() => reconnect());
+    
+    gui.add(params, "mapName", ["GDC1", "GDC2", "GDC3"]).onChange(
+        value => viz.worldMap.loadAmrl(value));
+}
 
 class Visualizer {
     constructor() {
@@ -124,13 +155,18 @@ class WorldMap {
         this.lines = new THREE.LineSegments(this.geometry, material);
     }
     
-    async load(url) {
+    async loadAmrl(name) {
+        const url = `http://amrl.cs.utexas.edu/f1tenth_course/maps/${name}.json`;
         const result = await fetch(url);
         const data = await result.json();
-        this.geometry.setFromPoints(data.flatMap(p => {
+        this.updateFromSegments(data);
+    }
+
+    updateFromSegments(segments) {
+        this.geometry.setFromPoints(segments.flatMap(s => {
             return [
-                new THREE.Vector3(p.p0.x, p.p0.y),
-                new THREE.Vector3(p.p1.x, p.p1.y),
+                new THREE.Vector3(s.p0.x, s.p0.y),
+                new THREE.Vector3(s.p1.x, s.p1.y),
             ];
         }));
     }
