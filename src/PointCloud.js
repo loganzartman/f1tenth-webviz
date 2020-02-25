@@ -1,6 +1,6 @@
 class PointCloud {
     constructor({color=Colors.pointCloud}={}) {
-        this.positions = new Float32Array();
+        this._containerSize = -1;
         this.geometry = new THREE.BufferGeometry();
         this.material = new THREE.PointsMaterial({
             color: color,
@@ -13,11 +13,12 @@ class PointCloud {
     }
 
     _expandBufferTo(n) {
-        const nComponents = n * 3;
-        if (nComponents <= this.positions.length)
+        if (n <= this._containerSize)
             return;
-        this.positions = new Float32Array(nComponents);
-        this.geometry.setAttribute("position", new THREE.BufferAttribute(this.positions, 3));
+        const itemSize = 3;
+        this.geometry.setAttribute("position", new THREE.Float32BufferAttribute(n * itemSize, itemSize));
+        this.position = this.geometry.attributes.position;
+        this._containerSize = n;
     }
 
     setSize(n) {

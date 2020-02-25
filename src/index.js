@@ -66,9 +66,12 @@ function buildGui() {
 function updatePoints(msg) {
     viz.pointCloud.setSize(msg.points.length);
     msg.points.forEach((p, i) => {
-        viz.pointCloud.positions[i * 3 + 0] = p.point.x;
-        viz.pointCloud.positions[i * 3 + 1] = p.point.y;
-        viz.pointCloud.positions[i * 3 + 2] = 0;
+        viz.pointCloud.position.setXYZ(
+            i,
+            p.point.x,
+            p.point.y,
+            0
+        );
     });
     viz.pointCloud.updatePositions();
 }
@@ -81,9 +84,12 @@ function updateLaserScan(msg) {
     for (let i = 0; i < nLaserPoints; ++i) {
         const theta = lasert0 + i / nLaserPoints * (lasert1 - lasert0);
         const r = msg.laser.ranges[i];
-        viz.laserScan.positions[i * 3 + 0] = Math.cos(theta) * r;
-        viz.laserScan.positions[i * 3 + 1] = Math.sin(theta) * r;
-        viz.laserScan.positions[i * 3 + 2] = 0;
+        viz.laserScan.position.setXYZ(
+            i,
+            Math.cos(theta) * r,
+            Math.sin(theta) * r,
+            0
+        );
     }
     viz.laserScan.updatePositions();
 }
