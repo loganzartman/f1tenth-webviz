@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Robot visualizer",
   "author": "Logan Zartman",
-  "main": "index.js",
+  "main": "index.html",
   "license": "MIT",
   "dependencies": {
     "@types/dat.gui": "^0.7.5",
