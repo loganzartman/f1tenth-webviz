@@ -1,3 +1,5 @@
+const MAP_BLANK = "--blank--";
+
 const Colors = {
     bg: 0x201819,
     pointCloud: 0x20dd80,
@@ -69,7 +71,7 @@ function buildGui() {
     guiConnection.add(params.connection, "hostname").name("IP / hostname").onFinishChange(() => reconnect());
     guiConnection.add(params.connection, "port").min(0).step(1).onFinishChange(() => reconnect());
     
-    gui.add(params, "mapName", ["GDC1", "GDC2", "GDC3"]).onChange(
+    gui.add(params, "mapName", [MAP_BLANK, "GDC1", "GDC2", "GDC3"]).onChange(
         value => viz.worldMap.loadAmrl(value));
 }
 
@@ -156,6 +158,10 @@ class WorldMap {
     }
     
     async loadAmrl(name) {
+        if (name === MAP_BLANK) {
+            this.updateFromSegments([]);
+            return;
+        }
         const url = `http://amrl.cs.utexas.edu/f1tenth_course/maps/${name}.json`;
         const result = await fetch(url);
         const data = await result.json();
