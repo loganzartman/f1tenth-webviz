@@ -46,20 +46,8 @@ function reconnect() {
         const buffer = await event.data.arrayBuffer();
         const parser = new DataParser(buffer);
         const msg = parser.readMessage();
-        viz.pointCloud.geometry.setFromPoints(
-            msg.points.map(point => new THREE.Vector3(point.point.x, point.point.y)));
-        
-        console.log(msg);
-        const laserPoints = [];
-        const nLaserPoints = msg.laser.ranges.length;
-        const lasert0 = msg.laser.angle_min;
-        const lasert1 = msg.laser.angle_max;
-        for (let i = 0; i < nLaserPoints; ++i) {
-            const theta = lasert0 + i / nLaserPoints * (lasert1 - lasert0);
-            const r = msg.laser.ranges[i];
-            laserPoints.push(new THREE.Vector3(Math.cos(theta) * r, Math.sin(theta) * r, 0)); 
-        }
-        viz.laserScan.geometry.setFromPoints(laserPoints);
+        updatePoints(msg);
+        updateLaserScan(msg);
     });
 }
 
@@ -73,6 +61,31 @@ function buildGui() {
     
     gui.add(params, "mapName", [MAP_BLANK, "GDC1", "GDC2", "GDC3"]).onChange(
         value => viz.worldMap.loadAmrl(value));
+}
+
+function updatePoints(msg) {
+    viz.pointCloud.setSize(msg.points.length);
+    msg.points.forEach((p, i) => {
+        viz.pointCloud.positions[i * 3 + 0] = p.point.x;
+        viz.pointCloud.positions[i * 3 + 1] = p.point.y;
+        viz.pointCloud.positions[i * 3 + 2] = 0;
+    });
+    viz.pointCloud.updatePositions();
+}
+
+function updateLaserScan(msg) {
+    const nLaserPoints = msg.laser.ranges.length;
+    const lasert0 = msg.laser.angle_min;
+    const lasert1 = msg.laser.angle_max;
+    viz.laserScan.setSize(nLaserPoints);
+    for (let i = 0; i < nLaserPoints; ++i) {
+        const theta = lasert0 + i / nLaserPoints * (lasert1 - lasert0);
+        const r = msg.laser.ranges[i];
+        viz.laserScan.positions[i * 3 + 0] = Math.cos(theta) * r;
+        viz.laserScan.positions[i * 3 + 1] = Math.sin(theta) * r;
+        viz.laserScan.positions[i * 3 + 2] = 0;
+    }
+    viz.laserScan.updatePositions();
 }
 
 class Visualizer {
@@ -138,12 +151,34 @@ class Visualizer {
 
 class PointCloud {
     constructor({color=Colors.pointCloud}={}) {
+        this.positions = new Float32Array();
         this.geometry = new THREE.BufferGeometry();
-        const material = new THREE.PointsMaterial({
+        this.material = new THREE.PointsMaterial({
             color: color,
             size: 5
         });
-        this.points = new THREE.Points(this.geometry, material);
+        this.points = new THREE.Points(this.geometry, this.material);
+        this.points.frustumCulled = false;
+
+        this.setSize(0);
+    }
+
+    _expandBufferTo(n) {
+        const nComponents = n * 3;
+        if (nComponents <= this.positions.length)
+            return;
+        this.positions = new Float32Array(nComponents);
+        this.geometry.setAttribute("position", new THREE.BufferAttribute(this.positions, 3));
+    }
+
+    setSize(n) {
+        this._expandBufferTo(n);
+        this.size = n;
+        this.geometry.setDrawRange(0, n);
+    }
+
+    updatePositions() {
+        this.geometry.attributes.position.needsUpdate = true;
     }
 }
     
