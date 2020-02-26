@@ -1,4 +1,5 @@
 const MAP_BLANK = "--blank--";
+const LIDAR_OFFSET = 0.2;
 
 const Colors = {
     bg: 0x201819,
@@ -145,7 +146,8 @@ function updatePoints(msg) {
 }
 
 function updateLaserScan(msg) {
-    const pose = getPoseMatrix4(msg);
+    const transform = getPoseMatrix4(msg)
+        .multiply(new THREE.Matrix4().makeTranslation(LIDAR_OFFSET, 0, 0));
     const nLaserPoints = msg.laser.ranges.length;
     const lasert0 = msg.laser.angle_min;
     const lasert1 = msg.laser.angle_max;
@@ -153,7 +155,7 @@ function updateLaserScan(msg) {
     for (let i = 0; i < nLaserPoints; ++i) {
         const theta = lasert0 + i / nLaserPoints * (lasert1 - lasert0);
         const r = msg.laser.ranges[i];
-        const pos = new THREE.Vector3(Math.cos(theta) * r, Math.sin(theta) * r, 0, 1).applyMatrix4(pose);
+        const pos = new THREE.Vector3(Math.cos(theta) * r, Math.sin(theta) * r, 0, 1).applyMatrix4(transform);
         viz.laserScan.position.setXYZ(i, pos.x, pos.y, pos.z);
     }
     viz.laserScan.updatePositions();
