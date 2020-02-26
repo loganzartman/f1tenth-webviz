@@ -29,12 +29,12 @@ class Visualizer {
         const robotGeometry = new THREE.BufferGeometry();
         robotGeometry.setFromPoints([
             new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 0, 0),
-            new THREE.Vector3(1, 0, 0), new THREE.Vector3(0.8, -0.2, 0),
-            new THREE.Vector3(1, 0, 0), new THREE.Vector3(0.8, 0.2, 0)
+            new THREE.Vector3(1, 0, 0), new THREE.Vector3(0.7, -0.3, 0),
+            new THREE.Vector3(1, 0, 0), new THREE.Vector3(0.7, 0.3, 0)
         ]);
         const robotMaterial = new THREE.LineBasicMaterial({
             color: Colors.robot,
-            linewidth: 5,
+            linewidth: 3,
             linecap: "round"
         });
         this.robot = new THREE.LineSegments(robotGeometry, robotMaterial);
