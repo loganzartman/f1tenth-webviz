@@ -27,6 +27,9 @@ class Visualizer {
         this.laserScan = new PointCloud({color: Colors.laserScan});
         this.scene.add(this.laserScan.points);
 
+        this.lines = new Lines();
+        this.scene.add(this.lines.lines);
+
         const robotGeometry = new THREE.BufferGeometry();
         robotGeometry.setFromPoints([
             new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 0, 0),

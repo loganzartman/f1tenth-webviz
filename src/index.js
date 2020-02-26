@@ -79,6 +79,7 @@ function reconnect() {
         const msg = parser.readMessage();
         console.log(msg);
         updatePoints(msg);
+        updateLines(msg);
         updateLaserScan(msg);
         updatePose(msg);
     });
@@ -143,6 +144,23 @@ function updatePoints(msg) {
         );
     });
     viz.pointCloud.updatePositions();
+}
+
+function updateLines(msg) {
+    viz.lines.setSize(msg.lines.length);
+    msg.lines.forEach((l, i) => {
+        const index = i * 2;
+        const color = new THREE.Color(l.color);
+
+        // start point
+        viz.lines.position.setXYZ(index, l.p0.x, l.p0.y, 0);
+        viz.lines.color.setXYZ(index, color.r, color.g, color.b);
+
+        // end point
+        viz.lines.position.setXYZ(index + 1, l.p1.x, l.p1.y, 0);
+        viz.lines.color.setXYZ(index + 1, color.r, color.g, color.b);
+    });
+    viz.lines.updateAttributes();
 }
 
 function updateLaserScan(msg) {
