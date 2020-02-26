@@ -1,0 +1,58 @@
+@import url("https://fonts.googleapis.com/css?family=B612&display=swap");
+
+html {
+    font-family: "B612", sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    margin: 0;
+    font-size: 1em;
+    text-align: center;
+}
+
+#stats-container {
+    margin-top: 0.5em;
+    text-align: center;
+}
+
+#dat-container {
+    margin-top: 0.5em;
+}
+
+.status {
+    display: inline-block;
+    padding: 0 1em;
+    text-align: center;
+    border: 1px solid;
+    border-radius: 1em;
+    line-height: 1.5em;
+}
+
+.status--connected {
+    color: #98CA99;
+    border-color: #98CA99;
+}
+
+.status--disconnected {
+    color: #F5536C;
+    border-color: #F5536C;
+}
+
+.overlay {
+    position: absolute;
+    margin: 1em;
+    color: white;
+    background: #303030;
+    box-shadow: 0px 4px 8px rgba(0,0,0,0.7);
+    z-index: 1;
+    user-select: none;
+}
+
+.overlay-content {
+    padding: 0.5em;
+}
