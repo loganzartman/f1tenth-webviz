@@ -42,15 +42,19 @@ async function onload() {
     setInterval(() => {
         if (!stats.connected)
             reconnect();
-    }, 1000);
+    }, 500);
     window.addEventListener("beforeunload", () => socket.close());
 }
 window.addEventListener("load", async () => onload(), false);
 
 function reconnect() {
     if (socket) {
+        if (socket.readyState === WebSocket.CONNECTING)
+            return;
         socket.close();
     }
+
+    // no way to suppress connection errors as they are async
     socket = new WebSocket(`ws://${params.connection.hostname}:${params.connection.port}`);
 
     socket.addEventListener("message", async event => {
