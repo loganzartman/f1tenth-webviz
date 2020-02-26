@@ -1,6 +1,7 @@
 class Visualizer {
     constructor() {
         this.renderer = new THREE.WebGLRenderer();
+        this.renderer.setPixelRatio(window.devicePixelRatio);
         this.scene = new THREE.Scene();
         this.camera = new THREE.OrthographicCamera();
 
