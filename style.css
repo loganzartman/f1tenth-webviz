@@ -18,6 +18,9 @@ h1 {
 #stats-container {
     margin-top: 0.5em;
     text-align: center;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
 }
 
 #dat-container {
@@ -33,12 +36,12 @@ h1 {
     line-height: 1.5em;
 }
 
-.status--connected {
+.status--green {
     color: #98CA99;
     border-color: #98CA99;
 }
 
-.status--disconnected {
+.status--red {
     color: #F5536C;
     border-color: #F5536C;
 }

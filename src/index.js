@@ -77,7 +77,7 @@ function buildGui() {
     document.getElementById("dat-container").appendChild(gui.domElement);
     gui.useLocalStorage = true;
 
-    gui.add(params, "paused");
+    gui.add(params, "paused").listen();
 
     gui.remember(params.connection);
     const guiConnection = gui.addFolder("Connection");
@@ -94,7 +94,13 @@ function buildGui() {
     statWidget(stats, "connected", statsContainer, connected => {
         const elem = document.createElement("div");
         elem.innerText = connected ? "✔ connected" : "❗ connecting...";
-        elem.className = ["status", connected ? "status--connected" : "status--disconnected"].join(" ");
+        elem.className = ["status", connected ? "status--green" : "status--red"].join(" ");
+        return elem;
+    });
+    statWidget(params, "paused", statsContainer, paused => {
+        const elem = document.createElement("div");
+        elem.innerText = paused ? "⏸" : "▶";
+        elem.className = ["status", paused ? "status--red" : "status--green"].join(" ");
         return elem;
     });
 }
