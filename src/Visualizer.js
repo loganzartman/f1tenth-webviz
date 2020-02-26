@@ -25,6 +25,20 @@ class Visualizer {
 
         this.laserScan = new PointCloud({color: Colors.laserScan});
         this.scene.add(this.laserScan.points);
+
+        const robotGeometry = new THREE.BufferGeometry();
+        robotGeometry.setFromPoints([
+            new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 0, 0),
+            new THREE.Vector3(1, 0, 0), new THREE.Vector3(0.8, -0.2, 0),
+            new THREE.Vector3(1, 0, 0), new THREE.Vector3(0.8, 0.2, 0)
+        ]);
+        const robotMaterial = new THREE.LineBasicMaterial({
+            color: Colors.robot,
+            linewidth: 5,
+            linecap: "round"
+        });
+        this.robot = new THREE.LineSegments(robotGeometry, robotMaterial);
+        this.scene.add(this.robot);
         
         const sphere = new THREE.Mesh(
             new THREE.SphereGeometry(0.25),

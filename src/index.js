@@ -66,6 +66,7 @@ function reconnect() {
         console.log(msg);
         updatePoints(msg);
         updateLaserScan(msg);
+        updatePose(msg);
     });
     socket.addEventListener("open", _ => {stats.connected = true;});
     socket.addEventListener("close", _ => {stats.connected = false;});
@@ -98,12 +99,17 @@ function buildGui() {
     });
 }
 
-function getPoseMatrix(msg) {
+function getPoseMatrix4(msg) {
     const pose = msg.robotPose;
-    const mat = new THREE.Matrix3();
-    mat.translate(pose.x, pose.y);
-    mat.rotate(pose.theta);
+    const mat = new THREE.Matrix4().makeTranslation(pose.x, pose.y, 0);
+    mat.multiply(new THREE.Matrix4().makeRotationZ(pose.theta));
     return mat;
+}
+
+function updatePose(msg) {
+    const pose = getPoseMatrix4(msg);
+    viz.robot.matrixAutoUpdate = false;
+    viz.robot.matrix.copy(pose);
 }
 
 function updatePoints(msg) {
@@ -120,7 +126,7 @@ function updatePoints(msg) {
 }
 
 function updateLaserScan(msg) {
-    const pose = getPoseMatrix(msg);
+    const pose = getPoseMatrix4(msg);
     const nLaserPoints = msg.laser.ranges.length;
     const lasert0 = msg.laser.angle_min;
     const lasert1 = msg.laser.angle_max;
@@ -128,7 +134,7 @@ function updateLaserScan(msg) {
     for (let i = 0; i < nLaserPoints; ++i) {
         const theta = lasert0 + i / nLaserPoints * (lasert1 - lasert0);
         const r = msg.laser.ranges[i];
-        const pos = new THREE.Vector3(Math.cos(theta) * r, Math.sin(theta) * r, 1).applyMatrix3(pose);
+        const pos = new THREE.Vector3(Math.cos(theta) * r, Math.sin(theta) * r, 0, 1).applyMatrix4(pose);
         viz.laserScan.position.setXYZ(i, pos.x, pos.y, pos.z);
     }
     viz.laserScan.updatePositions();
