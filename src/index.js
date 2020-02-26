@@ -15,6 +15,10 @@ const params = {
     mapName: "GDC1"
 };
 
+const stats = {
+    connected: false
+};
+
 let viz;
 let socket;
 
@@ -32,6 +36,10 @@ async function onload() {
 
     // create websocket connection
     reconnect();
+    setInterval(() => {
+        if (!stats.connected)
+            reconnect();
+    }, 1000);
     window.addEventListener("beforeunload", () => socket.close());
 }
 window.addEventListener("load", async () => onload(), false);
@@ -49,6 +57,8 @@ function reconnect() {
         updatePoints(msg);
         updateLaserScan(msg);
     });
+    socket.addEventListener("open", _ => {stats.connected = true;});
+    socket.addEventListener("close", _ => {stats.connected = false;});
 }
 
 function buildGui() {
@@ -61,6 +71,15 @@ function buildGui() {
     
     gui.add(params, "mapName", [MAP_BLANK, "GDC1", "GDC2", "GDC3"]).onChange(
         value => viz.worldMap.loadAmrl(value));
+
+    // stats widgets
+    const statsContainer = document.getElementById("stats-container");
+    statWidget(stats, "connected", statsContainer, connected => {
+        const elem = document.createElement("div");
+        elem.innerText = connected ? "✔ connected" : "❗ disconnected";
+        elem.className = ["status", connected ? "status--connected" : "status--disconnected"].join(" ");
+        return elem;
+    });
 }
 
 function updatePoints(msg) {
