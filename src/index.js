@@ -44,8 +44,21 @@ async function onload() {
             reconnect();
     }, 500);
     window.addEventListener("beforeunload", () => socket.close());
+
+    createHotkeys();
 }
 window.addEventListener("load", async () => onload(), false);
+
+function createHotkeys() {
+    window.addEventListener("keydown", (event) => {
+        if (event.key === "p") {
+            params.paused = !params.paused;
+        } else {
+            return;
+        }
+        event.preventDefault();
+    });
+}
 
 function reconnect() {
     if (socket) {
