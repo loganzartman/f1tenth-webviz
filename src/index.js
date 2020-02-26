@@ -63,6 +63,7 @@ function reconnect() {
         const buffer = await event.data.arrayBuffer();
         const parser = new DataParser(buffer);
         const msg = parser.readMessage();
+        console.log(msg);
         updatePoints(msg);
         updateLaserScan(msg);
     });
@@ -97,6 +98,14 @@ function buildGui() {
     });
 }
 
+function getPoseMatrix(msg) {
+    const pose = msg.robotPose;
+    const mat = new THREE.Matrix3();
+    mat.translate(pose.x, pose.y);
+    mat.rotate(pose.theta);
+    return mat;
+}
+
 function updatePoints(msg) {
     viz.pointCloud.setSize(msg.points.length);
     msg.points.forEach((p, i) => {
@@ -111,6 +120,7 @@ function updatePoints(msg) {
 }
 
 function updateLaserScan(msg) {
+    const pose = getPoseMatrix(msg);
     const nLaserPoints = msg.laser.ranges.length;
     const lasert0 = msg.laser.angle_min;
     const lasert1 = msg.laser.angle_max;
@@ -118,12 +128,8 @@ function updateLaserScan(msg) {
     for (let i = 0; i < nLaserPoints; ++i) {
         const theta = lasert0 + i / nLaserPoints * (lasert1 - lasert0);
         const r = msg.laser.ranges[i];
-        viz.laserScan.position.setXYZ(
-            i,
-            Math.cos(theta) * r,
-            Math.sin(theta) * r,
-            0
-        );
+        const pos = new THREE.Vector3(Math.cos(theta) * r, Math.sin(theta) * r, 1).applyMatrix3(pose);
+        viz.laserScan.position.setXYZ(i, pos.x, pos.y, pos.z);
     }
     viz.laserScan.updatePositions();
 }
