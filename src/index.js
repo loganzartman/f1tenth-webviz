@@ -91,7 +91,7 @@ function buildGui() {
     const statsContainer = document.getElementById("stats-container");
     statWidget(stats, "connected", statsContainer, connected => {
         const elem = document.createElement("div");
-        elem.innerText = connected ? "✔ connected" : "❗ disconnected";
+        elem.innerText = connected ? "✔ connected" : "❗ connecting...";
         elem.className = ["status", connected ? "status--connected" : "status--disconnected"].join(" ");
         return elem;
     });
