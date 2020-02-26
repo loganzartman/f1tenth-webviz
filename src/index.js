@@ -8,6 +8,7 @@ const Colors = {
 };
 
 const params = {
+    paused: false,
     connection: {
         hostname: "localhost",
         port: 10272
@@ -51,6 +52,8 @@ function reconnect() {
     socket = new WebSocket(`ws://${params.connection.hostname}:${params.connection.port}`);
 
     socket.addEventListener("message", async event => {
+        if (params.paused)
+            return;
         const buffer = await event.data.arrayBuffer();
         const parser = new DataParser(buffer);
         const msg = parser.readMessage();
@@ -64,6 +67,8 @@ function reconnect() {
 function buildGui() {
     const gui = new dat.GUI({autoPlace: false});
     document.getElementById("dat-container").appendChild(gui.domElement);
+
+    gui.add(params, "paused");
 
     const guiConnection = gui.addFolder("Connection");
     guiConnection.add(params.connection, "hostname").name("IP / hostname").onFinishChange(() => reconnect());
