@@ -147,17 +147,19 @@ function updatePoints(msg) {
 }
 
 function updateLines(msg) {
+    // TODO: does applying pose match original implementation? is this intentional?
+    const pose = getPoseMatrix4(msg);
     viz.lines.setSize(msg.lines.length);
     msg.lines.forEach((l, i) => {
         const index = i * 2;
         const color = new THREE.Color(l.color);
 
-        // start point
-        viz.lines.position.setXYZ(index, l.p0.x, l.p0.y, 0);
+        const a = new THREE.Vector4(l.p0.x, l.p0.y, 0, 1).applyMatrix4(pose);
+        viz.lines.position.setXYZ(index, a.x, a.y, 0);
         viz.lines.color.setXYZ(index, color.r, color.g, color.b);
 
-        // end point
-        viz.lines.position.setXYZ(index + 1, l.p1.x, l.p1.y, 0);
+        const b = new THREE.Vector4(l.p1.x, l.p1.y, 0, 1).applyMatrix4(pose);
+        viz.lines.position.setXYZ(index + 1, b.x, b.y, 0);
         viz.lines.color.setXYZ(index + 1, color.r, color.g, color.b);
     });
     viz.lines.updateAttributes();
