@@ -13,7 +13,9 @@ const params = {
         hostname: "localhost",
         port: 10272
     },
-    mapName: "GDC1"
+    viz: {
+        mapName: "GDC1"
+    }
 };
 
 const stats = {
@@ -26,7 +28,7 @@ let socket;
 async function onload() {    
     // set up visualizer
     viz = new Visualizer();
-    await viz.worldMap.loadAmrl(params.mapName);
+    await viz.worldMap.loadAmrl(params.viz.mapName);
     window.addEventListener("resize", () => 
         viz.updateRenderer(window.innerWidth, window.innerHeight));
     document.body.appendChild(viz.renderer.domElement);
@@ -67,14 +69,18 @@ function reconnect() {
 function buildGui() {
     const gui = new dat.GUI({autoPlace: false});
     document.getElementById("dat-container").appendChild(gui.domElement);
+    gui.useLocalStorage = true;
 
     gui.add(params, "paused");
 
+    gui.remember(params.connection);
     const guiConnection = gui.addFolder("Connection");
     guiConnection.add(params.connection, "hostname").name("IP / hostname").onFinishChange(() => reconnect());
     guiConnection.add(params.connection, "port").min(0).step(1).onFinishChange(() => reconnect());
     
-    gui.add(params, "mapName", [MAP_BLANK, "GDC1", "GDC2", "GDC3"]).onChange(
+    gui.remember(params.viz);
+    const guiViz = gui.addFolder("Visualization");
+    guiViz.add(params.viz, "mapName", [MAP_BLANK, "GDC1", "GDC2", "GDC3"]).onChange(
         value => viz.worldMap.loadAmrl(value));
 
     // stats widgets
