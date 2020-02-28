@@ -1,14 +1,6 @@
 const MAP_BLANK = "--blank--";
 const LIDAR_OFFSET = 0.2;
 
-const Colors = {
-    bg: 0x201819,
-    pointCloud: 0x20dd80,
-    laserScan: 0xdd8020,
-    walls: 0x2080dd,
-    pathOption: 0x606060
-};
-
 const params = {
     paused: false,
     connection: {
@@ -17,6 +9,14 @@ const params = {
     },
     viz: {
         mapName: "GDC1"
+    },
+    colors: {
+        bg: 0x201819,
+        pointCloud: 0x20dd80,
+        laserScan: 0xdd8020,
+        walls: 0x2080dd,
+        pathOption: 0x606060,
+        robot: 0xAAFFAA
     }
 };
 
@@ -96,11 +96,13 @@ function buildGui() {
 
     gui.add(params, "paused").listen();
 
+    // connection
     gui.remember(params.connection);
     const guiConnection = gui.addFolder("Connection");
     guiConnection.add(params.connection, "hostname").name("IP / hostname").onFinishChange(() => reconnect());
     guiConnection.add(params.connection, "port").min(0).step(1).onFinishChange(() => reconnect());
     
+    // visualization
     gui.remember(params.viz);
     const guiViz = gui.addFolder("Visualization");
     guiViz.add(params.viz, "mapName", [MAP_BLANK, "GDC1", "GDC2", "GDC3"]).onChange(
@@ -197,7 +199,7 @@ function updatePathOptions(msg) {
     const pose = getPoseMatrix4(msg);
     viz.pathOptions.setSize(msg.path_options.length * divisions);
     msg.path_options.forEach((o, i) => {
-        const color = new THREE.Color(Colors.pathOption);
+        const color = new THREE.Color(params.colors.pathOption);
         const points = makeArc(o.curvature, o.distance).getPoints(divisions);
 
         for (let j = 0; j < points.length - 1; ++j) {

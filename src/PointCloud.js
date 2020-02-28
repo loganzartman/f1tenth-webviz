@@ -1,5 +1,5 @@
 class PointCloud {
-    constructor({color=Colors.pointCloud}={}) {
+    constructor({color=params.colors.pointCloud}={}) {
         this._containerSize = -1;
         this.geometry = new THREE.BufferGeometry();
         this.material = new THREE.PointsMaterial({

@@ -19,7 +19,7 @@ class Visualizer {
         this.controls.zoomSpeed = 1.2;
         this.controls.panSpeed = 500;
         
-        this.renderer.setClearColor(Colors.bg);
+        this.renderer.setClearColor(params.colors.bg);
         this.updateRenderer(window.innerWidth, window.innerHeight);
         
         this.worldMap = new WorldMap();
@@ -31,7 +31,7 @@ class Visualizer {
         this.pointCloud = new PointCloud();
         this.scene.add(this.pointCloud.points);
 
-        this.laserScan = new PointCloud({color: Colors.laserScan});
+        this.laserScan = new PointCloud({color: params.colors.laserScan});
         this.scene.add(this.laserScan.points);
 
         this.lines = new Lines();
@@ -44,7 +44,7 @@ class Visualizer {
             new THREE.Vector3(ROBOT_LENGTH, 0, 0), new THREE.Vector3(ROBOT_LENGTH-ROBOT_WIDTH/2, ROBOT_WIDTH/2, 0)
         ]);
         const robotMaterial = new THREE.LineBasicMaterial({
-            color: Colors.robot,
+            color: params.colors.robot,
             linewidth: 3,
             linecap: "round"
         });

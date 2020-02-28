@@ -2,7 +2,7 @@ class WorldMap {
     constructor() {
         this.geometry = new THREE.BufferGeometry();
         const material = new THREE.LineBasicMaterial({
-            color: Colors.walls,
+            color: params.colors.walls,
             linewidth: 1
         });
         this.lines = new THREE.LineSegments(this.geometry, material);
