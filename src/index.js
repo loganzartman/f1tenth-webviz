@@ -175,7 +175,7 @@ function getPoseMatrix4(msg) {
 function makeArc(curvature, distance) {
     const epsilon = 10e-6;
     const radius = Math.abs(1 / curvature);
-    const angle = distance * Math.abs(curvature);
+    const angle = Math.min(2 * Math.PI, distance * Math.abs(curvature));
     if (curvature > epsilon) {
         return new THREE.EllipseCurve(
             0, radius, 
