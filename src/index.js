@@ -5,7 +5,8 @@ const Colors = {
     bg: 0x201819,
     pointCloud: 0x20dd80,
     laserScan: 0xdd8020,
-    walls: 0x2080dd
+    walls: 0x2080dd,
+    pathOption: 0x606060
 };
 
 const params = {
@@ -80,6 +81,7 @@ function reconnect() {
         console.log(msg);
         updatePoints(msg);
         updateLines(msg);
+        updatePathOptions(msg);
         updateLaserScan(msg);
         updatePose(msg);
     });
@@ -127,6 +129,31 @@ function getPoseMatrix4(msg) {
     return mat;
 }
 
+function makeArc(curvature, distance) {
+    const epsilon = 10e-6;
+    const radius = Math.abs(1 / curvature);
+    const angle = distance * Math.abs(curvature);
+    if (curvature > epsilon) {
+        return new THREE.EllipseCurve(
+            0, radius, 
+            radius, radius, 
+            3/2*Math.PI, 3/2*Math.PI + angle, 
+            false, 
+            0
+        );
+    } else if (curvature < -epsilon) {
+        return new THREE.EllipseCurve(
+            0, -radius,
+            radius, radius,
+            1/2*Math.PI - angle, 1/2*Math.PI,
+            false,
+            0
+        );
+    } else {
+        return new THREE.LineCurve(new THREE.Vector2(0, 0), new THREE.Vector2(distance, 0));
+    }
+}
+
 function updatePose(msg) {
     const pose = getPoseMatrix4(msg);
     viz.robot.matrixAutoUpdate = false;
@@ -163,6 +190,28 @@ function updateLines(msg) {
         viz.lines.color.setXYZ(index + 1, color.r, color.g, color.b);
     });
     viz.lines.updateAttributes();
+}
+
+function updatePathOptions(msg) {
+    const divisions = 32;
+    const pose = getPoseMatrix4(msg);
+    viz.pathOptions.setSize(msg.path_options.length * divisions);
+    msg.path_options.forEach((o, i) => {
+        const color = new THREE.Color(Colors.pathOption);
+        const points = makeArc(o.curvature, o.distance).getPoints(divisions);
+
+        for (let j = 0; j < points.length - 1; ++j) {
+            const index = (i * divisions + j) * 2;
+            const a = new THREE.Vector4(points[j].x, points[j].y, 0, 1).applyMatrix4(pose);
+            viz.pathOptions.position.setXYZ(index, a.x, a.y, 0);
+            viz.pathOptions.color.setXYZ(index, color.r, color.g, color.b);
+
+            const b = new THREE.Vector4(points[j+1].x, points[j+1].y, 0, 1).applyMatrix4(pose);
+            viz.pathOptions.position.setXYZ(index + 1, b.x, b.y, 0);
+            viz.pathOptions.color.setXYZ(index + 1, color.r, color.g, color.b);
+        }
+    });
+    viz.pathOptions.updateAttributes();
 }
 
 function updateLaserScan(msg) {

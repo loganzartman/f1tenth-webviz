@@ -2,6 +2,7 @@ class Visualizer {
     constructor() {
         this.renderer = new THREE.WebGLRenderer();
         this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.sortObjects = false;
         this.scene = new THREE.Scene();
         this.camera = new THREE.OrthographicCamera();
 
@@ -20,6 +21,9 @@ class Visualizer {
         
         this.worldMap = new WorldMap();
         this.scene.add(this.worldMap.lines);
+
+        this.pathOptions = new Lines();
+        this.scene.add(this.pathOptions.lines);
 
         this.pointCloud = new PointCloud();
         this.scene.add(this.pointCloud.points);
