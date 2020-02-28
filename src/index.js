@@ -163,31 +163,42 @@ function updatePose(msg) {
 }
 
 function updatePoints(msg) {
+    const pose = getPoseMatrix4(msg);
+    const pos = new THREE.Vector4();
     viz.pointCloud.setSize(msg.points.length);
     msg.points.forEach((p, i) => {
-        viz.pointCloud.position.setXYZ(
-            i,
-            p.point.x,
-            p.point.y,
-            0
-        );
+        pos.set(p.point.x, p.point.y, 0, 1);
+        if (i < msg.header.num_local_points) {
+            // point in robot coordinate frame
+            pos.applyMatrix4(pose);
+        }
+        viz.pointCloud.position.setXYZ(i, pos.x, pos.y, 0);
     });
     viz.pointCloud.updatePositions();
 }
 
 function updateLines(msg) {
-    // TODO: does applying pose match original implementation? is this intentional?
     const pose = getPoseMatrix4(msg);
+    const a = new THREE.Vector4();
+    const b = new THREE.Vector4();
+    const color = new THREE.Color();
     viz.lines.setSize(msg.lines.length);
     msg.lines.forEach((l, i) => {
         const index = i * 2;
-        const color = new THREE.Color(l.color);
+        color.set(l.color);
 
-        const a = new THREE.Vector4(l.p0.x, l.p0.y, 0, 1).applyMatrix4(pose);
+        a.set(l.p0.x, l.p0.y, 0, 1);
+        b.set(l.p1.x, l.p1.y, 0, 1);
+
+        if (i < msg.header.num_local_lines) {
+            // line in robot coordinate frame
+            a.applyMatrix4(pose);
+            b.applyMatrix4(pose);
+        }
+
         viz.lines.position.setXYZ(index, a.x, a.y, 0);
         viz.lines.color.setXYZ(index, color.r, color.g, color.b);
 
-        const b = new THREE.Vector4(l.p1.x, l.p1.y, 0, 1).applyMatrix4(pose);
         viz.lines.position.setXYZ(index + 1, b.x, b.y, 0);
         viz.lines.color.setXYZ(index + 1, color.r, color.g, color.b);
     });
@@ -197,18 +208,23 @@ function updateLines(msg) {
 function updatePathOptions(msg) {
     const divisions = 32;
     const pose = getPoseMatrix4(msg);
+    const a = new THREE.Vector4();
+    const b = new THREE.Vector4();
+    const color = new THREE.Color(params.colors.pathOption);
     viz.pathOptions.setSize(msg.path_options.length * divisions);
     msg.path_options.forEach((o, i) => {
-        const color = new THREE.Color(params.colors.pathOption);
         const points = makeArc(o.curvature, o.distance).getPoints(divisions);
 
         for (let j = 0; j < points.length - 1; ++j) {
             const index = (i * divisions + j) * 2;
-            const a = new THREE.Vector4(points[j].x, points[j].y, 0, 1).applyMatrix4(pose);
+
+            // path options are always in robot coordinate frame
+            a.set(points[j].x, points[j].y, 0, 1).applyMatrix4(pose);
+            b.set(points[j+1].x, points[j+1].y, 0, 1).applyMatrix4(pose);
+
             viz.pathOptions.position.setXYZ(index, a.x, a.y, 0);
             viz.pathOptions.color.setXYZ(index, color.r, color.g, color.b);
 
-            const b = new THREE.Vector4(points[j+1].x, points[j+1].y, 0, 1).applyMatrix4(pose);
             viz.pathOptions.position.setXYZ(index + 1, b.x, b.y, 0);
             viz.pathOptions.color.setXYZ(index + 1, color.r, color.g, color.b);
         }
@@ -219,6 +235,7 @@ function updatePathOptions(msg) {
 function updateLaserScan(msg) {
     const transform = getPoseMatrix4(msg)
         .multiply(new THREE.Matrix4().makeTranslation(LIDAR_OFFSET, 0, 0));
+    const pos = new THREE.Vector4();
     const nLaserPoints = msg.laser.ranges.length;
     const lasert0 = msg.laser.angle_min;
     const lasert1 = msg.laser.angle_max;
@@ -226,7 +243,9 @@ function updateLaserScan(msg) {
     for (let i = 0; i < nLaserPoints; ++i) {
         const theta = lasert0 + i / nLaserPoints * (lasert1 - lasert0);
         const r = msg.laser.ranges[i];
-        const pos = new THREE.Vector3(Math.cos(theta) * r, Math.sin(theta) * r, 0, 1).applyMatrix4(transform);
+
+        // laser scan points are always in robot coordinate frame
+        pos.set(Math.cos(theta) * r, Math.sin(theta) * r, 0, 1).applyMatrix4(transform);
         viz.laserScan.position.setXYZ(i, pos.x, pos.y, pos.z);
     }
     viz.laserScan.updatePositions();
