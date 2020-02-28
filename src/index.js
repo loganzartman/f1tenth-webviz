@@ -27,7 +27,7 @@ const stats = {
 let viz;
 let socket;
 
-async function onload() {    
+async function onload() {
     // set up visualizer
     viz = new Visualizer();
     await viz.worldMap.loadAmrl(params.viz.mapName);
@@ -107,6 +107,19 @@ function buildGui() {
     const guiViz = gui.addFolder("Visualization");
     guiViz.add(params.viz, "mapName", [MAP_BLANK, "GDC1", "GDC2", "GDC3"]).onChange(
         value => viz.worldMap.loadAmrl(value));
+    
+    // invoke all change and finishChange behaviors at startup
+    // TODO: can we avoid this?
+    (function startup(g){
+        for (let controller of g.__controllers) {
+            if (typeof controller.__onChange !== "undefined")
+                controller.__onChange(controller.getValue());
+            if (typeof controller.__onFinishChange !== "undefined")
+                controller.__onFinishChange(controller.getValue());
+        }
+        for (let folder in g.__folders)
+            startup(g.__folders[folder]);
+    })(gui);
 
     // stats widgets
     const statsContainer = document.getElementById("stats-container");
