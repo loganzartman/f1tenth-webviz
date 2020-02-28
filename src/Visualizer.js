@@ -6,7 +6,10 @@ class Visualizer {
         this.renderer = new THREE.WebGLRenderer();
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.sortObjects = false;
+
         this.scene = new THREE.Scene();
+        this.scene.scale.set(-1, -1, 1);
+
         this.camera = new THREE.OrthographicCamera();
 
         this.camera.position.x = 0;
