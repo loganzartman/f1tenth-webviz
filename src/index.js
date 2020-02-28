@@ -1,5 +1,6 @@
 const MAP_BLANK = "--blank--";
 const LIDAR_OFFSET = 0.2;
+const TIME_TRAVEL_LENGTH = 24;
 
 const params = {
     paused: false,
@@ -17,6 +18,9 @@ const params = {
         walls: 0x2080dd,
         pathOption: 0x606060,
         robot: 0xAAFFAA
+    },
+    timeTravel: {
+        backward: 0
     }
 };
 
@@ -26,6 +30,7 @@ const stats = {
 
 let viz;
 let socket;
+let timeTravelBuffer = [];
 
 async function onload() {
     // set up visualizer
@@ -55,6 +60,12 @@ function createHotkeys() {
     window.addEventListener("keydown", (event) => {
         if (event.key === "p") {
             params.paused = !params.paused;
+        } else if (event.key === "ArrowLeft") {
+            params.timeTravel.backward = Math.min(TIME_TRAVEL_LENGTH, params.timeTravel.backward + 1);
+            updateTimeTravel();
+        } else if (event.key === "ArrowRight") {
+            params.timeTravel.backward = Math.max(0, params.timeTravel.backward - 1);
+            updateTimeTravel();
         } else {
             return;
         }
@@ -78,15 +89,27 @@ function reconnect() {
         const buffer = await event.data.arrayBuffer();
         const parser = new DataParser(buffer);
         const msg = parser.readMessage();
-        console.log(msg);
-        updatePoints(msg);
-        updateLines(msg);
-        updatePathOptions(msg);
-        updateLaserScan(msg);
-        updatePose(msg);
+        timeTravelBuffer.push(msg);
+        timeTravelBuffer.splice(0, Math.max(0, timeTravelBuffer.length - TIME_TRAVEL_LENGTH));
+        handleMessage(msg);
     });
     socket.addEventListener("open", _ => {stats.connected = true;});
     socket.addEventListener("close", _ => {stats.connected = false;});
+}
+
+function handleMessage(msg) {
+    updatePoints(msg);
+    updateLines(msg);
+    updatePathOptions(msg);
+    updateLaserScan(msg);
+    updatePose(msg);
+}
+
+function updateTimeTravel() {
+    if (!params.paused)
+        return;
+    const index = timeTravelBuffer.length - 1 - Math.min(params.timeTravel.backward, timeTravelBuffer.length - 1);
+    handleMessage(timeTravelBuffer[index]); 
 }
 
 function buildGui() {
@@ -107,6 +130,11 @@ function buildGui() {
     const guiViz = gui.addFolder("Visualization");
     guiViz.add(params.viz, "mapName", [MAP_BLANK, "GDC1", "GDC2", "GDC3"]).onChange(
         value => viz.worldMap.loadAmrl(value));
+    
+    // time travel
+    const guiTime = gui.addFolder("Time Travel");
+    guiTime.addFolder("Works when paused.");
+    guiTime.add(params.timeTravel, "backward").min(0).max(TIME_TRAVEL_LENGTH).step(1).listen().onChange(_ => updateTimeTravel());
     
     // invoke all change and finishChange behaviors at startup
     // TODO: can we avoid this?
