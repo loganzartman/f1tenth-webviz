@@ -1,6 +1,6 @@
 const MAP_BLANK = "--blank--";
 const LIDAR_OFFSET = 0.2;
-const TIME_TRAVEL_LENGTH = 24;
+const TIME_TRAVEL_LENGTH = 40;
 
 const params = {
     paused: false,
