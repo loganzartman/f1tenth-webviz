@@ -50,12 +50,6 @@ class Visualizer {
         });
         this.robot = new THREE.LineSegments(robotGeometry, robotMaterial);
         this.scene.add(this.robot);
-        
-        const sphere = new THREE.Mesh(
-            new THREE.SphereGeometry(0.25),
-            new THREE.MeshBasicMaterial({color: "red"})
-        );
-        this.scene.add(sphere);
     }
         
     updateRenderer(w, h) {
