@@ -1,3 +1,6 @@
+const ROBOT_WIDTH = .281;
+const ROBOT_LENGTH = .43;
+
 class Visualizer {
     constructor() {
         this.renderer = new THREE.WebGLRenderer();
@@ -36,9 +39,9 @@ class Visualizer {
 
         const robotGeometry = new THREE.BufferGeometry();
         robotGeometry.setFromPoints([
-            new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 0, 0),
-            new THREE.Vector3(1, 0, 0), new THREE.Vector3(0.7, -0.3, 0),
-            new THREE.Vector3(1, 0, 0), new THREE.Vector3(0.7, 0.3, 0)
+            new THREE.Vector3(0, 0, 0), new THREE.Vector3(ROBOT_LENGTH, 0, 0),
+            new THREE.Vector3(ROBOT_LENGTH, 0, 0), new THREE.Vector3(ROBOT_LENGTH-ROBOT_WIDTH/2, -ROBOT_WIDTH/2, 0),
+            new THREE.Vector3(ROBOT_LENGTH, 0, 0), new THREE.Vector3(ROBOT_LENGTH-ROBOT_WIDTH/2, ROBOT_WIDTH/2, 0)
         ]);
         const robotMaterial = new THREE.LineBasicMaterial({
             color: Colors.robot,
