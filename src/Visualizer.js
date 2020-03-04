@@ -70,10 +70,22 @@ class Visualizer {
         const robotMaterial = new THREE.LineBasicMaterial({
             color: params.colors.robot,
             linewidth: 3,
-            linecap: "round"
         });
         this.robot = new THREE.LineSegments(robotGeometry, robotMaterial);
         this.scene.add(this.robot);
+
+        // phantom robot for pose setting
+        const phantomPoseGeometry = new THREE.BufferGeometry();
+        phantomPoseGeometry.setFromPoints(ROBOT_TEMPLATE);
+        const phantomPoseMaterial = new THREE.LineBasicMaterial({
+            color: params.colors.phantomRobot,
+            linewidth: 3,
+            transparent: true,
+            opacity: 0.7
+        });
+        this.phantomPose = new THREE.LineSegments(phantomPoseGeometry, phantomPoseMaterial);
+        this.phantomPose.visible = false;
+        this.scene.add(this.phantomPose);
 
         // cursor display
         this.crosshair = new Lines({material: new THREE.LineBasicMaterial({

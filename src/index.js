@@ -4,6 +4,7 @@ const TIME_TRAVEL_LENGTH = 40;
 
 const params = {
     paused: false,
+    setPose: false,
     connection: {
         hostname: "localhost",
         port: 10272
@@ -18,6 +19,7 @@ const params = {
         walls: 0x2080dd,
         pathOption: 0x606060,
         robot: 0xAAFFAA,
+        phantomRobot: 0xFFAAAA,
         crosshair: 0xFFFFFF
     },
     timeTravel: {
@@ -143,7 +145,8 @@ function buildGui() {
     document.getElementById("dat-container").appendChild(gui.domElement);
     gui.useLocalStorage = true;
 
-    gui.add(params, "paused").listen();
+    gui.add(params, "paused").name("Pause").listen();
+    gui.add(params, "setPose").name("Set Pose").listen().onChange(v => viz.phantomPose.visible = v);
 
     // connection
     gui.remember(params.connection);
