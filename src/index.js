@@ -25,7 +25,8 @@ const params = {
 };
 
 const stats = {
-    connected: false
+    connected: false,
+    mousePos: new THREE.Vector2(0, 0)
 };
 
 let viz;
@@ -53,8 +54,20 @@ async function onload() {
     window.addEventListener("beforeunload", () => socket.close());
 
     createHotkeys();
+    window.addEventListener("mousemove", event => {
+        stats.mousePos = screenToWorld(event.pageX, event.pageY);
+    });
 }
 window.addEventListener("load", async () => onload(), false);
+
+function screenToWorld(pageX, pageY) {
+    const screenPos = new THREE.Vector3(
+        -(pageX / window.innerWidth * 2 - 1), 
+        -(pageY / window.innerHeight * 2 - 1),
+        1.0
+    );
+    return screenPos.unproject(viz.camera);
+}
 
 function createHotkeys() {
     window.addEventListener("keydown", (event) => {
@@ -162,6 +175,12 @@ function buildGui() {
         const elem = document.createElement("div");
         elem.innerText = paused ? "⏸" : "▶";
         elem.className = ["status", paused ? "status--red" : "status--green"].join(" ");
+        return elem;
+    });
+    statWidget(stats, "mousePos", statsContainer, pos => {
+        const elem = document.createElement("div");
+        elem.innerText = `🖰 ${pos.x.toFixed(2).padStart(6, " ")}, ${pos.y.toFixed(2).padStart(6, " ")}`;
+        elem.classList.add("status", "text-widget");
         return elem;
     });
 }
