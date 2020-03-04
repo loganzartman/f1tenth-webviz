@@ -1,10 +1,14 @@
 class Lines {
-    constructor() {
+    constructor({material}={}) {
         this._containerSize = -1;
         this.geometry = new THREE.BufferGeometry();
-        this.material = new THREE.LineBasicMaterial({
-            vertexColors: true
-        });
+        if (typeof(material) === "undefined") {
+            this.material = new THREE.LineBasicMaterial({
+                vertexColors: true
+            });
+        } else {
+            this.material = material;
+        }
         this.lines = new THREE.LineSegments(this.geometry, this.material);
         this.lines.frustumCulled = false;
 
@@ -20,9 +24,11 @@ class Lines {
             return;
         const itemSize = 3;
         this.geometry.setAttribute("position", new THREE.Float32BufferAttribute(n * 2 * itemSize, itemSize));
-        this.geometry.setAttribute("color", new THREE.Float32BufferAttribute(n * 2 * itemSize, itemSize));
         this.position = this.geometry.attributes.position;
-        this.color = this.geometry.attributes.color;
+        if (this.material.vertexColors) {
+            this.geometry.setAttribute("color", new THREE.Float32BufferAttribute(n * 2 * itemSize, itemSize));
+            this.color = this.geometry.attributes.color;
+        }
         this._containerSize = n;
     }
 
@@ -38,6 +44,7 @@ class Lines {
 
     updateAttributes() {
         this.geometry.attributes.position.needsUpdate = true;
-        this.geometry.attributes.color.needsUpdate = true;
+        if (this.material.vertexColors)
+            this.geometry.attributes.color.needsUpdate = true;
     }
 }

@@ -103,6 +103,7 @@ function handleMessage(msg) {
     updatePathOptions(msg);
     updateLaserScan(msg);
     updatePose(msg);
+    updateParticles(msg);
 }
 
 function updateTimeTravel() {
@@ -201,6 +202,23 @@ function updatePose(msg) {
     const pose = getPoseMatrix4(msg);
     viz.robot.matrixAutoUpdate = false;
     viz.robot.matrix.copy(pose);
+}
+
+function updateParticles(msg) {
+    const transformation = new THREE.Matrix4();
+    const rotation = new THREE.Matrix4();
+    const point = new THREE.Vector4();
+    viz.particles.setSize(msg.particles.length * ROBOT_TEMPLATE.length / 2);
+    msg.particles.forEach((particle, i) => {
+        transformation.makeTranslation(particle.x, particle.y, 0);
+        transformation.multiply(rotation.makeRotationZ(particle.theta));
+        ROBOT_TEMPLATE.forEach((p, j) => {
+            point.set(p.x, p.y, p.z, 1.0);
+            point.applyMatrix4(transformation);
+            viz.particles.position.setXYZ(i * ROBOT_TEMPLATE.length + j, point.x, point.y, point.z);
+        });
+    });
+    viz.particles.updateAttributes();
 }
 
 function updatePoints(msg) {

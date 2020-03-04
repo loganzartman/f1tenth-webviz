@@ -1,6 +1,12 @@
 const ROBOT_WIDTH = .281;
 const ROBOT_LENGTH = .43;
 
+ROBOT_TEMPLATE = [
+    new THREE.Vector3(0, 0, 0), new THREE.Vector3(ROBOT_LENGTH, 0, 0),
+    new THREE.Vector3(ROBOT_LENGTH, 0, 0), new THREE.Vector3(ROBOT_LENGTH-ROBOT_WIDTH/2, -ROBOT_WIDTH/2, 0),
+    new THREE.Vector3(ROBOT_LENGTH, 0, 0), new THREE.Vector3(ROBOT_LENGTH-ROBOT_WIDTH/2, ROBOT_WIDTH/2, 0)
+];
+
 class Visualizer {
     constructor() {
         this.renderer = new THREE.WebGLRenderer();
@@ -24,28 +30,37 @@ class Visualizer {
         
         this.renderer.setClearColor(params.colors.bg);
         this.updateRenderer(window.innerWidth, window.innerHeight);
-        
+
+        // walls
         this.worldMap = new WorldMap();
         this.scene.add(this.worldMap.lines);
 
+        // potential path arcs
         this.pathOptions = new Lines();
         this.scene.add(this.pathOptions.lines);
 
+        // arbitrary point cloud data
         this.pointCloud = new PointCloud();
         this.scene.add(this.pointCloud.points);
 
+        // LIDAR point cloud data
         this.laserScan = new PointCloud({color: params.colors.laserScan});
         this.scene.add(this.laserScan.points);
 
+        // arbitrary line visualizations
         this.lines = new Lines();
         this.scene.add(this.lines.lines);
+        
+        // pose hypothesis particles
+        this.particles = new Lines({material: new THREE.LineBasicMaterial({
+            transparent: true,
+            opacity: 0.2,
+            color: params.colors.robot
+        })});
+        this.scene.add(this.particles.lines);
 
         const robotGeometry = new THREE.BufferGeometry();
-        robotGeometry.setFromPoints([
-            new THREE.Vector3(0, 0, 0), new THREE.Vector3(ROBOT_LENGTH, 0, 0),
-            new THREE.Vector3(ROBOT_LENGTH, 0, 0), new THREE.Vector3(ROBOT_LENGTH-ROBOT_WIDTH/2, -ROBOT_WIDTH/2, 0),
-            new THREE.Vector3(ROBOT_LENGTH, 0, 0), new THREE.Vector3(ROBOT_LENGTH-ROBOT_WIDTH/2, ROBOT_WIDTH/2, 0)
-        ]);
+        robotGeometry.setFromPoints(ROBOT_TEMPLATE);
         const robotMaterial = new THREE.LineBasicMaterial({
             color: params.colors.robot,
             linewidth: 3,
