@@ -17,7 +17,8 @@ const params = {
         laserScan: 0xdd8020,
         walls: 0x2080dd,
         pathOption: 0x606060,
-        robot: 0xAAFFAA
+        robot: 0xAAFFAA,
+        crosshair: 0xFFFFFF
     },
     timeTravel: {
         backward: 0
@@ -26,7 +27,8 @@ const params = {
 
 const stats = {
     connected: false,
-    mousePos: new THREE.Vector2(0, 0)
+    mousePosScreen: new THREE.Vector2(0.5, 0.5),
+    mousePosWorld: new THREE.Vector3(0, 0)
 };
 
 let viz;
@@ -54,16 +56,26 @@ async function onload() {
     window.addEventListener("beforeunload", () => socket.close());
 
     createHotkeys();
+    
     window.addEventListener("mousemove", event => {
-        stats.mousePos = screenToWorld(event.pageX, event.pageY);
+        stats.mousePosScreen = new THREE.Vector2(
+            event.pageX / window.innerWidth,
+            event.pageY / window.innerHeight
+        );
     });
+
+    (function f(){
+        stats.mousePosWorld = screenToWorld(stats.mousePosScreen);
+        updateCrosshair();
+        requestAnimationFrame(f);
+    })();
 }
 window.addEventListener("load", async () => onload(), false);
 
-function screenToWorld(pageX, pageY) {
+function screenToWorld(v) {
     const screenPos = new THREE.Vector3(
-        -(pageX / window.innerWidth * 2 - 1), 
-        -(pageY / window.innerHeight * 2 - 1),
+        -(v.x * 2 - 1), 
+        -(v.y * 2 - 1),
         1.0
     );
     return screenPos.unproject(viz.camera);
@@ -177,9 +189,9 @@ function buildGui() {
         elem.className = ["status", paused ? "status--red" : "status--green"].join(" ");
         return elem;
     });
-    statWidget(stats, "mousePos", statsContainer, pos => {
+    statWidget(stats, "mousePosWorld", statsContainer, pos => {
         const elem = document.createElement("div");
-        elem.innerText = `🖰 ${pos.x.toFixed(2).padStart(6, " ")}, ${pos.y.toFixed(2).padStart(6, " ")}`;
+        elem.innerText = `x:${pos.x.toFixed(2).padStart(6, " ")} y:${pos.y.toFixed(2).padStart(6, " ")}`;
         elem.classList.add("status", "text-widget");
         return elem;
     });
@@ -327,4 +339,13 @@ function updateLaserScan(msg) {
         viz.laserScan.position.setXYZ(i, pos.x, pos.y, pos.z);
     }
     viz.laserScan.updatePositions();
+}
+
+function updateCrosshair() {
+    viz.crosshair.setSize(4);
+    viz.crosshair.position.setXYZ(0, stats.mousePosScreen.x, 0, 0);
+    viz.crosshair.position.setXYZ(1, stats.mousePosScreen.x, 1, 0);
+    viz.crosshair.position.setXYZ(2, 0, stats.mousePosScreen.y, 0);
+    viz.crosshair.position.setXYZ(3, 1, stats.mousePosScreen.y, 0);
+    viz.crosshair.updateAttributes();
 }

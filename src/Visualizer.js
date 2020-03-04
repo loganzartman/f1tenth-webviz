@@ -12,21 +12,27 @@ class Visualizer {
         this.renderer = new THREE.WebGLRenderer();
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.sortObjects = false;
+        this.renderer.autoClear = false;
 
         this.scene = new THREE.Scene();
         this.scene.scale.set(-1, -1, 1);
+        this.screenScene = new THREE.Scene();
 
         this.camera = new THREE.OrthographicCamera();
-
-        this.camera.position.x = 0;
-        this.camera.position.y = 0;
-        this.camera.position.z = -1;
+        this.camera.position.set(0, 0, -1);
         this.camera.lookAt(0, 0, 1);
         this.camera.zoom = 0.02;
 
         this.controls = new THREE.TrackballControls(this.camera, this.renderer.domElement);
         this.controls.zoomSpeed = 1.2;
         this.controls.panSpeed = 500;
+
+        this.screenCamera = new THREE.Camera();
+        this.screenCamera.matrixAutoUpdate = false;
+        this.screenCamera.projectionMatrix = new THREE.Matrix4().identity()
+            .multiply(new THREE.Matrix4().makeScale(1, -1, 1))
+            .multiply(new THREE.Matrix4().makeTranslation(-1, -1, 0))
+            .multiply(new THREE.Matrix4().makeScale(2, 2, 1));
         
         this.renderer.setClearColor(params.colors.bg);
         this.updateRenderer(window.innerWidth, window.innerHeight);
@@ -68,6 +74,14 @@ class Visualizer {
         });
         this.robot = new THREE.LineSegments(robotGeometry, robotMaterial);
         this.scene.add(this.robot);
+
+        // cursor display
+        this.crosshair = new Lines({material: new THREE.LineBasicMaterial({
+            color: params.colors.crosshair,
+            transparent: true,
+            opacity: 0.25
+        })});
+        this.screenScene.add(this.crosshair.lines);
     }
         
     updateRenderer(w, h) {
@@ -91,7 +105,9 @@ class Visualizer {
     run() {
         this.controls.update();
         this.updateCamera();
+        this.renderer.clear();
         this.renderer.render(this.scene, this.camera);
+        this.renderer.render(this.screenScene, this.screenCamera);
         requestAnimationFrame(() => this.run());
     }
 }
