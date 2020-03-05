@@ -1,4 +1,7 @@
 class CameraControls {
+    maxZoom = 3;
+    minZoom = 0.005;
+    zoomRate = 0.001;
     down = false;
     dragPos = new THREE.Vector3();
     velocity = new THREE.Vector3();
@@ -9,6 +12,7 @@ class CameraControls {
         this.domTarget.addEventListener("mousemove", event => this.mouseMove(event));
         this.domTarget.addEventListener("mousedown", event => this.mouseDown(event));
         this.domTarget.addEventListener("mouseup", event => this.mouseUp(event));
+        this.domTarget.addEventListener("wheel", event => this.wheel(event));
     }
 
     /** 
@@ -45,6 +49,12 @@ class CameraControls {
 
         this.camera.position.add(dragDx);
         this.dragPos.copy(this.screenToNdc(event.clientX, event.clientY));
+        event.preventDefault();
+    }
+    
+    wheel(event) {
+        this.camera.zoom = Math.max(this.minZoom, Math.min(this.maxZoom,
+            this.camera.zoom * (1 + event.deltaY * -this.zoomRate)));
         event.preventDefault();
     }
 }
