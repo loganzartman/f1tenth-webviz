@@ -4,7 +4,10 @@ class CameraControls {
     zoomRate = 0.001;
     down = false;
     dragPos = new THREE.Vector3();
-    velocity = new THREE.Vector3();
+
+    interpolationRate = 0.25;
+    dragTarget = new THREE.Vector3();
+    zoomTarget = 0;
 
     constructor(camera, domTarget = document.body) {
         this.camera = camera;
@@ -13,6 +16,8 @@ class CameraControls {
         this.domTarget.addEventListener("mousedown", event => this.mouseDown(event));
         this.domTarget.addEventListener("mouseup", event => this.mouseUp(event));
         this.domTarget.addEventListener("wheel", event => this.wheel(event));
+        this.zoomTarget = this.camera.zoom;
+        this.update();
     }
 
     /** 
@@ -25,6 +30,13 @@ class CameraControls {
             (y - rect.y) / rect.height * 2 - 1,
             1
         );
+    }
+
+    update() {
+        this.camera.position.add(this.dragTarget.clone().sub(this.camera.position)
+            .multiplyScalar(this.interpolationRate * dt));
+        this.camera.zoom += (this.zoomTarget - this.camera.zoom) * this.interpolationRate * dt;
+        requestAnimationFrame(() => this.update());
     }
 
     mouseDown(event) {
@@ -47,14 +59,14 @@ class CameraControls {
             .multiply(new THREE.Vector3(-1, 1, 1));
         console.log(this.dragPos);
 
-        this.camera.position.add(dragDx);
+        this.dragTarget.add(dragDx);
         this.dragPos.copy(this.screenToNdc(event.clientX, event.clientY));
         event.preventDefault();
     }
     
     wheel(event) {
-        this.camera.zoom = Math.max(this.minZoom, Math.min(this.maxZoom,
-            this.camera.zoom * (1 + event.deltaY * -this.zoomRate)));
+        this.zoomTarget = Math.max(this.minZoom, Math.min(this.maxZoom,
+            this.zoomTarget * (1 + event.deltaY * -this.zoomRate)));
         event.preventDefault();
     }
 }
