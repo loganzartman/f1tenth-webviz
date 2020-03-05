@@ -23,9 +23,7 @@ class Visualizer {
         this.camera.lookAt(0, 0, 1);
         this.camera.zoom = 0.02;
 
-        this.controls = new THREE.TrackballControls(this.camera, this.renderer.domElement);
-        this.controls.zoomSpeed = 1.2;
-        this.controls.panSpeed = 500;
+        this.controls = new CameraControls(this.camera);
 
         this.screenCamera = new THREE.Camera();
         this.screenCamera.matrixAutoUpdate = false;
@@ -111,11 +109,9 @@ class Visualizer {
         this.camera.near = -10;
         this.camera.far = 10;
         this.camera.updateProjectionMatrix();
-        this.controls.handleResize();
     }
     
     run() {
-        this.controls.update();
         this.updateCamera();
         this.renderer.clear();
         this.renderer.render(this.scene, this.camera);
