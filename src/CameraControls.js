@@ -5,7 +5,8 @@ class CameraControls {
     down = false;
     dragPos = new THREE.Vector3();
 
-    interpolationRate = 0.25;
+    lastUpdateTime = Date.now();
+    interpolationTime = 0.05;
     dragTarget = new THREE.Vector3();
     zoomTarget = 0;
 
@@ -33,9 +34,12 @@ class CameraControls {
     }
 
     update() {
+        const dt = (Date.now() - this.lastUpdateTime) / 1000.0;
+        this.lastUpdateTime = Date.now();
+
         this.camera.position.add(this.dragTarget.clone().sub(this.camera.position)
-            .multiplyScalar(this.interpolationRate * dt));
-        this.camera.zoom += (this.zoomTarget - this.camera.zoom) * this.interpolationRate * dt;
+            .multiplyScalar((1 / this.interpolationTime) * dt));
+        this.camera.zoom += (this.zoomTarget - this.camera.zoom) * (1 / this.interpolationTime) * dt;
         requestAnimationFrame(() => this.update());
     }
 
