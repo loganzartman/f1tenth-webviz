@@ -89,8 +89,12 @@ function screenToWorld(v) {
 
 function createHotkeys() {
     window.addEventListener("keydown", (event) => {
-        if (event.key === "p") {
+        if (event.key === " ") {
             params.paused = !params.paused;
+        } else if (event.key === "p") { 
+            setSettingPose(!params.setPose);
+        } else if (event.key === "f") {
+            params.followCar = !params.followCar;
         } else if (event.key === "ArrowLeft") {
             params.timeTravel.backward = Math.min(TIME_TRAVEL_LENGTH, params.timeTravel.backward + 1);
             updateTimeTravel();
@@ -153,11 +157,11 @@ function buildGui() {
     document.getElementById("dat-container").appendChild(gui.domElement);
     gui.useLocalStorage = true;
 
-    gui.add(params, "paused").name("Pause").listen();
-    gui.add(params, "setPose").name("Set Pose").listen().onChange(v => {
+    gui.add(params, "paused").name("Pause [space]").listen();
+    gui.add(params, "setPose").name("Set Pose [p]").listen().onChange(v => {
         setSettingPose(v);
     });
-    gui.add(params, "followCar").name("Follow Car").listen();
+    gui.add(params, "followCar").name("Follow Car [f]").listen();
 
     // connection
     gui.remember(params.connection);
