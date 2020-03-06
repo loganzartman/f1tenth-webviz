@@ -214,6 +214,7 @@ function setupPoseSetter() {
     const el = viz.renderer.domElement;
     const dragStart = new THREE.Vector3();
     let dragging = false;
+    let theta;
 
     el.addEventListener("mousedown", event => {
         if (!params.setPose)
@@ -232,8 +233,8 @@ function setupPoseSetter() {
 
         socket.send(JSON.stringify({
             type: "set_initial_pose",
-            x: x,
-            y: y,
+            x: dragStart.x,
+            y: dragStart.y,
             theta: theta
         }));
     });
@@ -245,7 +246,7 @@ function setupPoseSetter() {
 
         const pos = screenToNdc(el, event.clientX, event.clientY).unproject(viz.camera);
         const dragDx = pos.clone().sub(dragStart);
-        const theta = Math.atan2(dragDx.y, dragDx.x);
+        theta = Math.atan2(dragDx.y, dragDx.x);
 
         const pose = new THREE.Matrix4().makeTranslation(dragStart.x, dragStart.y, 0);
         pose.multiply(new THREE.Matrix4().makeRotationZ(theta));
