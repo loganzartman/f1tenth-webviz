@@ -5,6 +5,7 @@ const TIME_TRAVEL_LENGTH = 40;
 const params = {
     paused: false,
     setPose: false,
+    setNavGoal: false,
     followCar: false,
     connection: {
         hostname: "localhost",
@@ -93,6 +94,8 @@ function createHotkeys() {
             params.paused = !params.paused;
         } else if (event.key === "p") { 
             setSettingPose(!params.setPose);
+        } else if (event.key === "g") {
+            setSettingNavGoal(!params.setNavGoal);
         } else if (event.key === "f") {
             params.followCar = !params.followCar;
         } else if (event.key === "ArrowLeft") {
@@ -158,9 +161,8 @@ function buildGui() {
     gui.useLocalStorage = true;
 
     gui.add(params, "paused").name("Pause [space]").listen();
-    gui.add(params, "setPose").name("Set Pose [p]").listen().onChange(v => {
-        setSettingPose(v);
-    });
+    gui.add(params, "setPose").name("Set Pose [p]").listen().onChange(v => setSettingPose(v));
+    gui.add(params, "setNavGoal").name("Set NavGoal [g]").listen().onChange(v => setSettingNavGoal(v));
     gui.add(params, "followCar").name("Follow Car [f]").listen();
 
     // connection
@@ -222,10 +224,22 @@ function buildGui() {
 
 function setSettingPose(b) {
     if (b) {
+        setSettingNavGoal(false);
         params.setPose = true;
         viz.controls.enabled = false;
     } else {
         params.setPose = false;
+        viz.controls.enabled = true;
+    }
+}
+
+function setSettingNavGoal(b) {
+    if (b) {
+        setSettingPose(false);
+        params.setNavGoal = true;
+        viz.controls.enabled = false;
+    } else {
+        params.setNavGoal = false;
         viz.controls.enabled = true;
     }
 }
@@ -237,29 +251,39 @@ function setupPoseSetter() {
     let theta;
 
     el.addEventListener("mousedown", event => {
-        if (!params.setPose)
+        if (!params.setPose && !params.setNavGoal)
             return;
 
         dragging = true;
         dragStart.copy(screenToNdc(el, event.clientX, event.clientY).unproject(viz.camera));
     });
     el.addEventListener("mouseup", event => {
-        if (!params.setPose)
+        if (!params.setPose && !params.setNavGoal)
             return;
 
         dragging = false;
         viz.phantomPose.visible = false;
-        setSettingPose(false);
 
-        socket.send(JSON.stringify({
-            type: "set_initial_pose",
-            x: dragStart.x,
-            y: dragStart.y,
-            theta: theta
-        }));
+        if (params.setNavGoal) {
+            setSettingNavGoal(false);
+            socket.send(JSON.stringify({
+                type: "set_nav_goal",
+                x: dragStart.x,
+                y: dragStart.y,
+                theta: theta
+            }));
+        } else {
+            setSettingPose(false);
+            socket.send(JSON.stringify({
+                type: "set_initial_pose",
+                x: dragStart.x,
+                y: dragStart.y,
+                theta: theta
+            }));
+        }
     });
     el.addEventListener("mousemove", event => {
-        if (!params.setPose)
+        if (!params.setPose && !params.setNavGoal)
             return;
         if (!dragging)
             return;
