@@ -15,22 +15,17 @@ class Visualizer {
         this.renderer.autoClear = false;
 
         this.scene = new THREE.Scene();
-        this.scene.scale.set(-1, -1, 1);
-        this.screenScene = new THREE.Scene();
+        this.ndcScene = new THREE.Scene();
 
         this.camera = new THREE.OrthographicCamera();
         this.camera.position.set(0, 0, -1);
         this.camera.lookAt(0, 0, 1);
+        this.camera.scale.set(-1, -1, 1);
         this.camera.zoom = 0.02;
 
         this.controls = new CameraControls(this.camera);
 
-        this.screenCamera = new THREE.Camera();
-        this.screenCamera.matrixAutoUpdate = false;
-        this.screenCamera.projectionMatrix = new THREE.Matrix4().identity()
-            .multiply(new THREE.Matrix4().makeScale(1, -1, 1))
-            .multiply(new THREE.Matrix4().makeTranslation(-1, -1, 0))
-            .multiply(new THREE.Matrix4().makeScale(2, 2, 1));
+        this.ndcCamera = new THREE.Camera();
         
         this.renderer.setClearColor(params.colors.bg);
         this.updateRenderer(window.innerWidth, window.innerHeight);
@@ -91,7 +86,7 @@ class Visualizer {
             transparent: true,
             opacity: 0.25
         })});
-        this.screenScene.add(this.crosshair.lines);
+        this.ndcScene.add(this.crosshair.lines);
     }
         
     updateRenderer(w, h) {
@@ -115,7 +110,7 @@ class Visualizer {
         this.updateCamera();
         this.renderer.clear();
         this.renderer.render(this.scene, this.camera);
-        this.renderer.render(this.screenScene, this.screenCamera);
+        this.renderer.render(this.ndcScene, this.ndcCamera);
         requestAnimationFrame(() => this.run());
     }
 }

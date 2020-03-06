@@ -58,7 +58,7 @@ class CameraControls {
         const dragDx = screenToNdc(this.domElement, event.clientX, event.clientY)
             .unproject(this.camera)
             .sub(this.dragPos.clone().unproject(this.camera))
-            .multiply(new THREE.Vector3(-1, 1, 1));
+            .multiply(new THREE.Vector3(-1, -1, 1));
         console.log(this.dragPos);
 
         this.dragTarget.add(dragDx);

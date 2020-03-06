@@ -29,7 +29,7 @@ const params = {
 
 const stats = {
     connected: false,
-    mousePosScreen: new THREE.Vector2(0.5, 0.5),
+    mousePosNdc: new THREE.Vector3(0, 0),
     mousePosWorld: new THREE.Vector3(0, 0)
 };
 
@@ -58,16 +58,14 @@ async function onload() {
     window.addEventListener("beforeunload", () => socket.close());
 
     createHotkeys();
+    setupPoseSetter();
     
-    window.addEventListener("mousemove", event => {
-        stats.mousePosScreen = new THREE.Vector2(
-            event.pageX / window.innerWidth,
-            event.pageY / window.innerHeight
-        );
+    document.body.addEventListener("mousemove", event => {
+        stats.mousePosNdc = screenToNdc(document.body, event.clientX, event.clientY);
     });
 
     (function f(){
-        stats.mousePosWorld = screenToWorld(stats.mousePosScreen);
+        stats.mousePosWorld = stats.mousePosNdc.clone().unproject(viz.camera);
         updateCrosshair();
         requestAnimationFrame(f);
     })();
@@ -146,7 +144,9 @@ function buildGui() {
     gui.useLocalStorage = true;
 
     gui.add(params, "paused").name("Pause").listen();
-    gui.add(params, "setPose").name("Set Pose").listen().onChange(v => viz.phantomPose.visible = v);
+    gui.add(params, "setPose").name("Set Pose").listen().onChange(v => {
+        setSettingPose(v);
+    });
 
     // connection
     gui.remember(params.connection);
@@ -198,6 +198,73 @@ function buildGui() {
         elem.classList.add("status", "text-widget");
         return elem;
     });
+}
+
+function setSettingPose(b) {
+    if (b) {
+        params.setPose = true;
+        viz.controls.enabled = false;
+    } else {
+        params.setPose = false;
+        viz.controls.enabled = true;
+    }
+}
+
+function setupPoseSetter() {
+    const el = viz.renderer.domElement;
+    const dragStart = new THREE.Vector3();
+    let dragging = false;
+
+    el.addEventListener("mousedown", event => {
+        if (!params.setPose)
+            return;
+
+        dragging = true;
+        dragStart.copy(screenToNdc(el, event.clientX, event.clientY).unproject(viz.camera));
+    });
+    el.addEventListener("mouseup", event => {
+        if (!params.setPose)
+            return;
+
+        dragging = false;
+        viz.phantomPose.visible = false;
+        setSettingPose(false);
+
+        socket.send(JSON.stringify({
+            type: "set_initial_pose",
+            x: x,
+            y: y,
+            theta: theta
+        }));
+    });
+    el.addEventListener("mousemove", event => {
+        if (!params.setPose)
+            return;
+        if (!dragging)
+            return;
+
+        const pos = screenToNdc(el, event.clientX, event.clientY).unproject(viz.camera);
+        const dragDx = pos.clone().sub(dragStart);
+        const theta = Math.atan2(dragDx.y, dragDx.x);
+
+        const pose = new THREE.Matrix4().makeTranslation(dragStart.x, dragStart.y, 0);
+        pose.multiply(new THREE.Matrix4().makeRotationZ(theta));
+        viz.phantomPose.visible = true;
+        viz.phantomPose.matrixAutoUpdate = false;
+        viz.phantomPose.matrix.copy(pose);
+    });
+}
+
+/** 
+ * convert clientX, clientY coordinates to normalized device coords 
+ */
+function screenToNdc(domElement, x, y) {
+    const rect = domElement.getBoundingClientRect();
+    return new THREE.Vector3(
+        ((x - rect.x) / rect.width * 2 - 1),
+        -((y - rect.y) / rect.height * 2 - 1),
+        0
+    );
 }
 
 function getPoseMatrix4(msg) {
@@ -346,9 +413,9 @@ function updateLaserScan(msg) {
 
 function updateCrosshair() {
     viz.crosshair.setSize(4);
-    viz.crosshair.position.setXYZ(0, stats.mousePosScreen.x, 0, 0);
-    viz.crosshair.position.setXYZ(1, stats.mousePosScreen.x, 1, 0);
-    viz.crosshair.position.setXYZ(2, 0, stats.mousePosScreen.y, 0);
-    viz.crosshair.position.setXYZ(3, 1, stats.mousePosScreen.y, 0);
+    viz.crosshair.position.setXYZ(0, stats.mousePosNdc.x, -1, 0);
+    viz.crosshair.position.setXYZ(1, stats.mousePosNdc.x, 1, 0);
+    viz.crosshair.position.setXYZ(2, -1, stats.mousePosNdc.y, 0);
+    viz.crosshair.position.setXYZ(3, 1, stats.mousePosNdc.y, 0);
     viz.crosshair.updateAttributes();
 }
