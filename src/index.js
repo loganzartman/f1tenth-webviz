@@ -20,13 +20,14 @@ const params = {
         showCrosshair: false
     },
     colors: {
-        bg: 0x201819,
-        pointCloud: 0x20dd80,
-        laserScan: 0xdd8020,
-        walls: 0x2080dd,
-        pathOption: 0x606060,
-        robot: 0xAAFFAA,
-        phantomRobot: 0xFFAAAA,
+        bg: 0x212121,
+        pointCloud: 0xff6e40,
+        laserScan: 0xffd740,
+        walls: 0x536dfe,
+        pathOption: 0x757575,
+        bestPathOption: 0x64ffda,
+        robot: 0xb2ff59,
+        phantomRobot: 0x69f0ae,
         crosshair: 0xFFFFFF
     },
     timeTravel: {
@@ -418,7 +419,7 @@ function updatePathOptions(msg) {
     const a = new THREE.Vector4();
     const b = new THREE.Vector4();
     const normalColor = new THREE.Color(params.colors.pathOption);
-    const bestColor = new THREE.Color(0x1080FF);
+    const bestColor = new THREE.Color(params.colors.bestPathOption);
     viz.pathOptions.setSize((msg.path_options.length + 2) * divisions);
 
     const arc = (i, curvature, distance, offset, color) => {
