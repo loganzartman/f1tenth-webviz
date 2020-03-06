@@ -411,27 +411,49 @@ function updateLines(msg) {
 }
 
 function updatePathOptions(msg) {
+    if (msg.path_options.length === 0)
+        return;
     const divisions = 32;
     const pose = getPoseMatrix4(msg);
     const a = new THREE.Vector4();
     const b = new THREE.Vector4();
-    const color = new THREE.Color(params.colors.pathOption);
-    viz.pathOptions.setSize(msg.path_options.length * divisions);
-    msg.path_options.forEach((o, i) => {
-        const points = makeArc(o.curvature, o.distance).getPoints(divisions);
+    const normalColor = new THREE.Color(params.colors.pathOption);
+    const bestColor = new THREE.Color(0x1080FF);
+    viz.pathOptions.setSize((msg.path_options.length + 2) * divisions);
+
+    const arc = (i, curvature, distance, offset, color) => {
+        let transform = pose;
+        if (offset !== 0) {
+            transform = transform.clone()
+                .multiply(new THREE.Matrix4().makeTranslation(0, offset, 0));
+            const angle = distance * curvature;
+            curvature = 1 / (1 / curvature - offset);
+            distance = angle / curvature;
+        }
+        const points = makeArc(curvature, distance).getPoints(divisions);
 
         for (let j = 0; j < points.length - 1; ++j) {
             const index = (i * divisions + j) * 2;
 
             // path options are always in robot coordinate frame
-            a.set(points[j].x, points[j].y, 0, 1).applyMatrix4(pose);
-            b.set(points[j+1].x, points[j+1].y, 0, 1).applyMatrix4(pose);
+            a.set(points[j].x, points[j].y, 0, 1).applyMatrix4(transform);
+            b.set(points[j+1].x, points[j+1].y, 0, 1).applyMatrix4(transform);
 
             viz.pathOptions.position.setXYZ(index, a.x, a.y, 0);
             viz.pathOptions.color.setXYZ(index, color.r, color.g, color.b);
 
             viz.pathOptions.position.setXYZ(index + 1, b.x, b.y, 0);
             viz.pathOptions.color.setXYZ(index + 1, color.r, color.g, color.b);
+        }
+    };
+
+    msg.path_options.forEach((o, i) => {
+        const best = i === msg.path_options.length - 1;
+        const color = best ? bestColor : normalColor;
+        arc(i, o.curvature, o.distance, 0, color);
+        if (best) {
+            arc(i + 1, o.curvature, o.distance, -o.clearance, color);
+            arc(i + 2, o.curvature, o.distance,  o.clearance, color);
         }
     });
     viz.pathOptions.updateAttributes();
