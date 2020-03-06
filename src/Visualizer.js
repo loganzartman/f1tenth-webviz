@@ -23,7 +23,7 @@ class Visualizer {
         this.camera.scale.set(-1, -1, 1);
         this.camera.zoom = 0.02;
 
-        this.controls = new CameraControls(this.camera);
+        this.controls = new CameraControls(this.camera, this.renderer.domElement);
 
         this.ndcCamera = new THREE.Camera();
         
