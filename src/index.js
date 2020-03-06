@@ -24,10 +24,10 @@ const params = {
         pointCloud: 0xff6e40,
         laserScan: 0xffd740,
         walls: 0x536dfe,
-        pathOptionGood: 0x1e88e5,
-        pathOption: 0x808080,
         pathOptionBad: 0xc62828,
-        bestPathOption: 0x64ffda,
+        pathOption: 0x808080,
+        pathOptionGood: 0x1e88e5,
+        pathOptionBest: 0xffffff,
         robot: 0xb2ff59,
         phantomRobot: 0x69f0ae,
         crosshair: 0xFFFFFF
@@ -423,7 +423,7 @@ function updatePathOptions(msg) {
     const badColor = new THREE.Color(params.colors.pathOptionBad);
     const normalColor = new THREE.Color(params.colors.pathOption);
     const goodColor = new THREE.Color(params.colors.pathOptionGood);
-    const bestColor = new THREE.Color(params.colors.bestPathOption);
+    const bestColor = new THREE.Color(params.colors.pathOptionBest);
     const lerpedColor = new THREE.Color();
     viz.pathOptions.setSize((msg.path_options.length + 2) * divisions);
 
@@ -453,7 +453,9 @@ function updatePathOptions(msg) {
         }
     };
 
-    const maxClearance = msg.path_options.reduce((max, curr) => Math.max(max, curr.clearance), 0);
+    const maxClearance = msg.path_options
+        .filter(o => isFinite(o.clearance))
+        .reduce((max, curr) => Math.max(max, curr.clearance), 0);
 
     msg.path_options.forEach((o, i) => {
         const best = i === msg.path_options.length - 1;
