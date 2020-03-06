@@ -12,6 +12,14 @@ class PointCloud {
         this.setSize(0);
     }
 
+    get visible() {
+        return this.points.visible;
+    }
+
+    set visible(v) {
+        this.points.visible = v;
+    }
+
     _expandBufferTo(n) {
         if (n <= this._containerSize)
             return;

@@ -11,7 +11,12 @@ const params = {
         port: 10272
     },
     viz: {
-        mapName: "GDC1"
+        mapName: "GDC1",
+        showLines: true,
+        showPoints: true,
+        showPaths: true,
+        showParticles: true,
+        showCrosshair: false
     },
     colors: {
         bg: 0x201819,
@@ -152,7 +157,7 @@ function buildGui() {
     gui.add(params, "setPose").name("Set Pose").listen().onChange(v => {
         setSettingPose(v);
     });
-    gui.add(params, "followCar").listen();
+    gui.add(params, "followCar").name("Follow Car").listen();
 
     // connection
     gui.remember(params.connection);
@@ -165,6 +170,11 @@ function buildGui() {
     const guiViz = gui.addFolder("Visualization");
     guiViz.add(params.viz, "mapName", [MAP_BLANK, "GDC1", "GDC2", "GDC3"]).onChange(
         value => viz.worldMap.loadAmrl(value));
+    guiViz.add(params.viz, "showLines").onChange(v => viz.lines.visible = v);
+    guiViz.add(params.viz, "showPoints").onChange(v => viz.pointCloud.visible = v);
+    guiViz.add(params.viz, "showPaths").onChange(v => viz.pathOptions.visible = v);
+    guiViz.add(params.viz, "showParticles").onChange(v => viz.particles.visible = v);
+    guiViz.add(params.viz, "showCrosshair").onChange(v => viz.crosshair.visible = v);
     
     // time travel
     const guiTime = gui.addFolder("Time Travel");

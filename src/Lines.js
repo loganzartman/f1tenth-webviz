@@ -15,6 +15,14 @@ class Lines {
         this.setSize(0);
     }
 
+    get visible() {
+        return this.lines.visible;
+    }
+
+    set visible(v) {
+        this.lines.visible = v;
+    }
+
     /**
      * Expand container to at least n*2 vertices
      * @param {Number} n number of lines (half the number of endpoints) 
