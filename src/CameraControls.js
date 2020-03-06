@@ -27,9 +27,6 @@ class CameraControls {
         const dt = (Date.now() - this.lastUpdateTime) / 1000.0;
         this.lastUpdateTime = Date.now();
 
-        if (!this.enabled)
-            return;
-
         this.camera.position.add(this.dragTarget.clone().sub(this.camera.position)
             .multiplyScalar((1 / this.interpolationTime) * dt));
         this.camera.zoom += (this.zoomTarget - this.camera.zoom) * (1 / this.interpolationTime) * dt;
