@@ -5,6 +5,7 @@ const TIME_TRAVEL_LENGTH = 40;
 const params = {
     paused: false,
     setPose: false,
+    followCar: false,
     connection: {
         hostname: "localhost",
         port: 10272
@@ -129,6 +130,10 @@ function handleMessage(msg) {
     updateLaserScan(msg);
     updatePose(msg);
     updateParticles(msg);
+    if (params.followCar) {
+        viz.controls.dragTarget.setX(msg.robotPose.x);
+        viz.controls.dragTarget.setY(msg.robotPose.y);
+    }
 }
 
 function updateTimeTravel() {
@@ -147,6 +152,7 @@ function buildGui() {
     gui.add(params, "setPose").name("Set Pose").listen().onChange(v => {
         setSettingPose(v);
     });
+    gui.add(params, "followCar").listen();
 
     // connection
     gui.remember(params.connection);
