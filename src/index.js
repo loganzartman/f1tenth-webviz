@@ -24,7 +24,9 @@ const params = {
         pointCloud: 0xff6e40,
         laserScan: 0xffd740,
         walls: 0x536dfe,
-        pathOption: 0x757575,
+        pathOptionGood: 0x1e88e5,
+        pathOption: 0x808080,
+        pathOptionBad: 0xc62828,
         bestPathOption: 0x64ffda,
         robot: 0xb2ff59,
         phantomRobot: 0x69f0ae,
@@ -418,8 +420,11 @@ function updatePathOptions(msg) {
     const pose = getPoseMatrix4(msg);
     const a = new THREE.Vector4();
     const b = new THREE.Vector4();
+    const badColor = new THREE.Color(params.colors.pathOptionBad);
     const normalColor = new THREE.Color(params.colors.pathOption);
+    const goodColor = new THREE.Color(params.colors.pathOptionGood);
     const bestColor = new THREE.Color(params.colors.bestPathOption);
+    const lerpedColor = new THREE.Color();
     viz.pathOptions.setSize((msg.path_options.length + 2) * divisions);
 
     const arc = (i, curvature, distance, offset, color) => {
@@ -448,9 +453,15 @@ function updatePathOptions(msg) {
         }
     };
 
+    const maxClearance = msg.path_options.reduce((max, curr) => Math.max(max, curr.clearance), 0);
+
     msg.path_options.forEach((o, i) => {
         const best = i === msg.path_options.length - 1;
-        const color = best ? bestColor : normalColor;
+        const f = o.clearance / maxClearance;
+        lerpedColor.set(badColor)
+            .lerp(normalColor, Math.min(1, f * 2))
+            .lerp(goodColor, Math.max(0, f * 2 - 1))
+        const color = best ? bestColor : lerpedColor;
         arc(i, o.curvature, o.distance, 0, color);
         if (best) {
             arc(i + 1, o.curvature, o.distance, -o.clearance, color);
