@@ -53,7 +53,7 @@ class Visualizer {
         // pose hypothesis particles
         this.particles = new Lines({material: new THREE.LineBasicMaterial({
             transparent: true,
-            opacity: 0.2,
+            opacity: 0.5,
             color: params.colors.robot
         })});
         this.scene.add(this.particles.lines);
