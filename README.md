@@ -2,6 +2,8 @@
 
 *A reimplementation of UT AMRL's [web_rviz][web_rviz] used for the F1/10th Robotics Course*
 
+![Sample image](f1demo.png)
+
 ## Running
 
 1. Clone the repository
