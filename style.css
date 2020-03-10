@@ -32,6 +32,19 @@ h1 {
     font-family: "B612" !important;
 }
 
+.info-icon {
+    display: inline-block;
+    position: absolute;
+    right: 0.5em;
+    top: 0.2em;
+    font-size: 1.25em;
+}
+
+.info-icon > a {
+    text-decoration: none;
+    color: white;
+}
+
 .status {
     display: inline-block;
     padding: 0 1em;
