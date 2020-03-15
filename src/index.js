@@ -13,17 +13,19 @@ const params = {
     },
     viz: {
         mapName: "GDC1",
+        showCrosshair: false,
+        showGrid: true,
         showLines: true,
         showPoints: true,
         showPaths: true,
-        showParticles: true,
-        showCrosshair: false
+        showParticles: true
     },
     colors: {
         bg: 0x212121,
         pointCloud: 0xff6e40,
         laserScan: 0xffd740,
         walls: 0x536dfe,
+        grid: 0x424242,
         pathOptionBad: 0xc62828,
         pathOption: 0x808080,
         pathOptionGood: 0x1e88e5,
@@ -179,11 +181,12 @@ function buildGui() {
     const guiViz = gui.addFolder("Visualization");
     guiViz.add(params.viz, "mapName", [MAP_BLANK, "GDC1", "GDC2", "GDC3"]).onChange(
         value => viz.worldMap.loadAmrl(value));
+    guiViz.add(params.viz, "showCrosshair").onChange(v => viz.crosshair.visible = v);
+    guiViz.add(params.viz, "showGrid").onChange(v => viz.grid.visible = v);
     guiViz.add(params.viz, "showLines").onChange(v => viz.lines.visible = v);
     guiViz.add(params.viz, "showPoints").onChange(v => viz.pointCloud.visible = v);
     guiViz.add(params.viz, "showPaths").onChange(v => viz.pathOptions.visible = v);
     guiViz.add(params.viz, "showParticles").onChange(v => viz.particles.visible = v);
-    guiViz.add(params.viz, "showCrosshair").onChange(v => viz.crosshair.visible = v);
     
     // time travel
     const guiTime = gui.addFolder("Time Travel");

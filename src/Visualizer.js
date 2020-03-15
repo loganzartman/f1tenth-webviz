@@ -30,7 +30,12 @@ class Visualizer {
         this.renderer.setClearColor(params.colors.bg);
         this.updateRenderer(window.innerWidth, window.innerHeight);
 
-        // walls
+        // grid
+        this.grid = new THREE.GridHelper(100, 50, new THREE.Color(params.colors.grid), new THREE.Color(params.colors.grid));
+        this.grid.rotateX(Math.PI * 0.5);
+        this.scene.add(this.grid);
+
+        // map
         this.worldMap = new WorldMap();
         this.scene.add(this.worldMap.lines);
 
