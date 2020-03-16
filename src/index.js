@@ -69,7 +69,7 @@ async function onload() {
     }, 500);
     window.addEventListener("beforeunload", () => socket.close());
 
-    createHotkeys();
+    createHotkeys(viz.renderer.domElement);
     setupPoseSetter();
     
     document.body.addEventListener("mousemove", event => {
@@ -93,8 +93,8 @@ function screenToWorld(v) {
     return screenPos.unproject(viz.camera);
 }
 
-function createHotkeys() {
-    window.addEventListener("keydown", (event) => {
+function createHotkeys(domTarget) {
+    domTarget.addEventListener("keydown", (event) => {
         if (event.key === " ") {
             params.paused = !params.paused;
         } else if (event.key === "p") { 

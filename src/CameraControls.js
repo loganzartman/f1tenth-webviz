@@ -38,7 +38,6 @@ class CameraControls {
 
         this.dragPos = screenToNdc(this.domElement, event.clientX, event.clientY);
         this.down = true;
-        event.preventDefault();
     }
 
     mouseUp(event) {
