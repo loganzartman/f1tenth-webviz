@@ -1,5 +1,7 @@
 const MAP_BLANK = "--blank--";
 const LIDAR_OFFSET = 0.2;
+const LASER_RANGE_MIN = 0.2;
+const LASER_RANGE_MAX = 10;
 const TIME_TRAVEL_LENGTH = 40;
 
 const params = {
@@ -487,6 +489,12 @@ function updateLaserScan(msg) {
     for (let i = 0; i < nLaserPoints; ++i) {
         const theta = lasert0 + i / nLaserPoints * (lasert1 - lasert0);
         const r = msg.laser.ranges[i];
+
+        // discard out-of-range points that may be inaccurate
+        if (LASER_RANGE_MAX - r < Number.EPSILON)
+            continue;
+        if (r - LASER_RANGE_MIN < Number.EPSILON)
+            continue;
 
         // laser scan points are always in robot coordinate frame
         pos.set(Math.cos(theta) * r, Math.sin(theta) * r, 0, 1).applyMatrix4(transform);
