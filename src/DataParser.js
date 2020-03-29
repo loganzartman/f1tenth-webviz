@@ -121,7 +121,7 @@ class DataParser {
     }
     
     readColor() {
-        return "#" + (this.readUint32()).toString(16).padStart(6, "0");
+        return this.readUint32();
     }
     
     readPoint2D() {
