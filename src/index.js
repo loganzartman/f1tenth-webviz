@@ -488,7 +488,8 @@ function updateLaserScan(msg) {
     const nLaserPoints = msg.laser.ranges.length;
     const lasert0 = msg.laser.angle_min;
     const lasert1 = msg.laser.angle_max;
-    viz.laserScan.setSize(nLaserPoints);
+    viz.laserScan.setSize(nLaserPoints); // conservative count
+    let count = 0;
     for (let i = 0; i < nLaserPoints; ++i) {
         const theta = lasert0 + i / nLaserPoints * (lasert1 - lasert0);
         const r = msg.laser.ranges[i];
@@ -501,8 +502,10 @@ function updateLaserScan(msg) {
 
         // laser scan points are always in robot coordinate frame
         pos.set(Math.cos(theta) * r, Math.sin(theta) * r, 0, 1).applyMatrix4(transform);
-        viz.laserScan.position.setXYZ(i, pos.x, pos.y, pos.z);
+        viz.laserScan.position.setXYZ(count, pos.x, pos.y, pos.z);
+        count += 1;
     }
+    viz.laserScan.setSize(count); // actual count
     viz.laserScan.updatePositions();
 }
 
