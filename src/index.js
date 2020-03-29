@@ -61,6 +61,13 @@ async function onload() {
     document.body.appendChild(viz.renderer.domElement);
     viz.run();
 
+    // asynchronous data parsing
+    createParserWorker(msg => {
+        timeTravelBuffer.push(msg);
+        timeTravelBuffer.splice(0, Math.max(0, timeTravelBuffer.length - TIME_TRAVEL_LENGTH));
+        handleMessage(msg);
+    });
+
     // create dat.GUI interface
     buildGui();
 
@@ -133,11 +140,7 @@ function reconnect() {
         if (params.paused)
             return;
         const buffer = await event.data.arrayBuffer();
-        const parser = new DataParser(buffer);
-        const msg = parser.readMessage();
-        timeTravelBuffer.push(msg);
-        timeTravelBuffer.splice(0, Math.max(0, timeTravelBuffer.length - TIME_TRAVEL_LENGTH));
-        handleMessage(msg);
+        parserEnqueue(buffer);
     });
     socket.addEventListener("open", _ => {stats.connected = true;});
     socket.addEventListener("close", _ => {stats.connected = false;});
