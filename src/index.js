@@ -1,5 +1,7 @@
 const MAP_BLANK = "--blank--";
 const LIDAR_OFFSET = 0.2;
+const LASER_RANGE_MIN = 0.2;
+const LASER_RANGE_MAX = 10;
 const TIME_TRAVEL_LENGTH = 40;
 
 const params = {
@@ -13,17 +15,19 @@ const params = {
     },
     viz: {
         mapName: "GDC1",
+        showCrosshair: false,
+        showGrid: true,
         showLines: true,
         showPoints: true,
         showPaths: true,
-        showParticles: true,
-        showCrosshair: false
+        showParticles: true
     },
     colors: {
         bg: 0x212121,
         pointCloud: 0xff6e40,
         laserScan: 0xffd740,
         walls: 0x536dfe,
+        grid: 0x424242,
         pathOptionBad: 0xc62828,
         pathOption: 0x808080,
         pathOptionGood: 0x1e88e5,
@@ -67,7 +71,7 @@ async function onload() {
     }, 500);
     window.addEventListener("beforeunload", () => socket.close());
 
-    createHotkeys();
+    createHotkeys(viz.renderer.domElement);
     setupPoseSetter();
     
     document.body.addEventListener("mousemove", event => {
@@ -91,8 +95,8 @@ function screenToWorld(v) {
     return screenPos.unproject(viz.camera);
 }
 
-function createHotkeys() {
-    window.addEventListener("keydown", (event) => {
+function createHotkeys(domTarget) {
+    domTarget.addEventListener("keydown", (event) => {
         if (event.key === " ") {
             params.paused = !params.paused;
         } else if (event.key === "p") { 
@@ -179,11 +183,12 @@ function buildGui() {
     const guiViz = gui.addFolder("Visualization");
     guiViz.add(params.viz, "mapName", [MAP_BLANK, "GDC1", "GDC2", "GDC3"]).onChange(
         value => viz.worldMap.loadAmrl(value));
+    guiViz.add(params.viz, "showCrosshair").onChange(v => viz.crosshair.visible = v);
+    guiViz.add(params.viz, "showGrid").onChange(v => viz.grid.visible = v);
     guiViz.add(params.viz, "showLines").onChange(v => viz.lines.visible = v);
     guiViz.add(params.viz, "showPoints").onChange(v => viz.pointCloud.visible = v);
     guiViz.add(params.viz, "showPaths").onChange(v => viz.pathOptions.visible = v);
     guiViz.add(params.viz, "showParticles").onChange(v => viz.particles.visible = v);
-    guiViz.add(params.viz, "showCrosshair").onChange(v => viz.crosshair.visible = v);
     
     // time travel
     const guiTime = gui.addFolder("Time Travel");
@@ -487,6 +492,12 @@ function updateLaserScan(msg) {
     for (let i = 0; i < nLaserPoints; ++i) {
         const theta = lasert0 + i / nLaserPoints * (lasert1 - lasert0);
         const r = msg.laser.ranges[i];
+
+        // discard out-of-range points that may be inaccurate
+        if (LASER_RANGE_MAX - r < Number.EPSILON)
+            continue;
+        if (r - LASER_RANGE_MIN < Number.EPSILON)
+            continue;
 
         // laser scan points are always in robot coordinate frame
         pos.set(Math.cos(theta) * r, Math.sin(theta) * r, 0, 1).applyMatrix4(transform);
