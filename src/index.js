@@ -18,6 +18,7 @@ const params = {
         showCrosshair: false,
         showGrid: true,
         showLines: true,
+        showLaserScan: true,
         showPoints: true,
         showPaths: true,
         showParticles: true
@@ -186,6 +187,7 @@ function buildGui() {
     guiViz.add(params.viz, "showCrosshair").onChange(v => viz.crosshair.visible = v);
     guiViz.add(params.viz, "showGrid").onChange(v => viz.grid.visible = v);
     guiViz.add(params.viz, "showLines").onChange(v => viz.lines.visible = v);
+    guiViz.add(params.viz, "showLaserScan").onChange(v => viz.laserScan.visible = v);
     guiViz.add(params.viz, "showPoints").onChange(v => viz.pointCloud.visible = v);
     guiViz.add(params.viz, "showPaths").onChange(v => viz.pathOptions.visible = v);
     guiViz.add(params.viz, "showParticles").onChange(v => viz.particles.visible = v);
