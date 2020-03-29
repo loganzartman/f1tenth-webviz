@@ -1,11 +1,16 @@
 class PointCloud {
-    constructor({color=params.colors.pointCloud}={}) {
+    constructor({material}={}) {
         this._containerSize = -1;
         this.geometry = new THREE.BufferGeometry();
-        this.material = new THREE.PointsMaterial({
-            color: color,
-            size: 5
-        });
+        if (typeof material === "undefined") {
+            this.material = new THREE.PointsMaterial({
+                vertexColors: true,
+                size: 5
+            });
+        }
+        else {
+            this.material = material;
+        }
         this.points = new THREE.Points(this.geometry, this.material);
         this.points.frustumCulled = false;
 
@@ -26,6 +31,10 @@ class PointCloud {
         const itemSize = 3;
         this.geometry.setAttribute("position", new THREE.Float32BufferAttribute(n * itemSize, itemSize));
         this.position = this.geometry.attributes.position;
+        if (this.material.vertexColors) {
+            this.geometry.setAttribute("color", new THREE.Float32BufferAttribute(n * itemSize, itemSize));
+            this.color = this.geometry.attributes.color;
+        }
         this._containerSize = n;
     }
 
@@ -37,5 +46,7 @@ class PointCloud {
 
     updatePositions() {
         this.geometry.attributes.position.needsUpdate = true;
+        if (this.material.vertexColors)
+            this.geometry.attributes.color.needsUpdate = true;
     }
 }

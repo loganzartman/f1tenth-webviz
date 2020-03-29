@@ -43,7 +43,12 @@ class Visualizer {
         this.scene.add(this.pointCloud.points);
 
         // LIDAR point cloud data
-        this.laserScan = new PointCloud({color: params.colors.laserScan});
+        this.laserScan = new PointCloud({
+            material: new THREE.PointsMaterial({
+                color: params.colors.laserScan,
+                size: 5
+            })
+        });
         this.scene.add(this.laserScan.points);
 
         // arbitrary line visualizations

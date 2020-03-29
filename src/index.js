@@ -373,14 +373,17 @@ function updateParticles(msg) {
 function updatePoints(msg) {
     const pose = getPoseMatrix4(msg);
     const pos = new THREE.Vector4();
+    const color = new THREE.Color();
     viz.pointCloud.setSize(msg.points.length);
     msg.points.forEach((p, i) => {
         pos.set(p.point.x, p.point.y, 0, 1);
+        color.set(p.color);
         if (i < msg.header.num_local_points) {
             // point in robot coordinate frame
             pos.applyMatrix4(pose);
         }
         viz.pointCloud.position.setXYZ(i, pos.x, pos.y, 0);
+        viz.pointCloud.color.setXYZ(i, color.r, color.g, color.b);
     });
     viz.pointCloud.updatePositions();
 }
