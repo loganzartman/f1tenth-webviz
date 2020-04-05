@@ -2,7 +2,7 @@ class CameraControls {
     enabled = true;
     maxZoom = 3;
     minZoom = 0.005;
-    zoomRate = 0.001;
+    zoomRate = 0.1;
     down = false;
     dragPos = new THREE.Vector3();
 
@@ -66,7 +66,7 @@ class CameraControls {
             return;
 
         this.zoomTarget = Math.max(this.minZoom, Math.min(this.maxZoom,
-            this.zoomTarget * (1 + event.deltaY * -this.zoomRate)));
+            this.zoomTarget * (1 - Math.sign(event.deltaY) * this.zoomRate)));
         event.preventDefault();
     }
 }
