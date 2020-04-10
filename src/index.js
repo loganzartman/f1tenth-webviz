@@ -365,11 +365,13 @@ function updatePose(msg) {
 function updateParticles(msg) {
     const transformation = new THREE.Matrix4();
     const rotation = new THREE.Matrix4();
+    const scale = new THREE.Matrix4().makeScale(0.15, 0.15, 0.15);
     const point = new THREE.Vector4();
     viz.particles.setSize(msg.particles.length * ROBOT_TEMPLATE.length / 2);
     msg.particles.forEach((particle, i) => {
         transformation.makeTranslation(particle.x, particle.y, 0);
         transformation.multiply(rotation.makeRotationZ(particle.theta));
+        transformation.multiply(scale);
         ROBOT_TEMPLATE.forEach((p, j) => {
             point.set(p.x, p.y, p.z, 1.0);
             point.applyMatrix4(transformation);
