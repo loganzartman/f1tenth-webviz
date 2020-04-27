@@ -428,8 +428,10 @@ function updateLines(msg) {
 }
 
 function updatePathOptions(msg) {
-    if (msg.path_options.length === 0)
+    if (msg.path_options.length === 0) {
+        viz.pathOptions.setSize(0);
         return;
+    }
     const divisions = 32;
     const pose = getPoseMatrix4(msg);
     const a = new THREE.Vector4();
