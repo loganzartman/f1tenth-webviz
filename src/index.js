@@ -148,6 +148,7 @@ function reconnect() {
 function handleMessage(msg) {
     updatePoints(msg);
     updateLines(msg);
+    updateArcs(msg);
     updatePathOptions(msg);
     updateLaserScan(msg);
     updatePose(msg);
@@ -425,6 +426,43 @@ function updateLines(msg) {
         viz.lines.color.setXYZ(index + 1, color.r, color.g, color.b);
     });
     viz.lines.updateAttributes();
+}
+
+function updateArcs(msg) {
+    const divisions = 32;
+    const pose = getPoseMatrix4(msg);
+    const a = new THREE.Vector4();
+    const b = new THREE.Vector4();
+    const color = new THREE.Color();
+
+    viz.arcs.setSize(msg.arcs.length * divisions);
+    msg.arcs.forEach((arc, i) => {
+        color.set(arc.color);
+        const points = new THREE.EllipseCurve(
+            arc.center.x, arc.center.y, arc.radius, arc.radius,
+            arc.start_angle, arc.end_angle, true, 0
+        ).getPoints(divisions);
+
+        for (let j = 0; j < points.length - 1; ++j) {
+            const index = (i * divisions + j) * 2;
+
+            a.set(points[j].x, points[j].y, 0, 1);
+            b.set(points[j+1].x, points[j+1].y, 0, 1);
+
+            if (i < msg.header.num_local_arcs) {
+                // arc in robot coordinate frame
+                a.applyMatrix4(pose);
+                b.applyMatrix4(pose);
+            }
+
+            viz.arcs.position.setXYZ(index, a.x, a.y, 0);
+            viz.arcs.color.setXYZ(index, color.r, color.g, color.b);
+
+            viz.arcs.position.setXYZ(index + 1, b.x, b.y, 0);
+            viz.arcs.color.setXYZ(index + 1, color.r, color.g, color.b);
+        }
+    });
+    viz.arcs.updateAttributes();
 }
 
 function updatePathOptions(msg) {

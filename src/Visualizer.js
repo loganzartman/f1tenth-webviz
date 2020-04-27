@@ -59,6 +59,10 @@ class Visualizer {
         // arbitrary line visualizations
         this.lines = new Lines();
         this.scene.add(this.lines.lines);
+
+        // arbitrary arc visualizations
+        this.arcs = new Lines();
+        this.scene.add(this.arcs.lines);
         
         // pose hypothesis particles
         this.particles = new Lines({material: new THREE.LineBasicMaterial({
