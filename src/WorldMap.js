@@ -13,7 +13,7 @@ class WorldMap {
             this.updateFromSegments([]);
             return;
         }
-        const url = `http://amrl.cs.utexas.edu/f1tenth_course/maps/${name}.json`;
+        const url = `http://amrl.cs.utexas.edu/amrl_maps/${name}/${name}.vectormap.json`;
         const result = await fetch(url);
         const data = await result.json();
         this.updateFromSegments(data);
